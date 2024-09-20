@@ -7,10 +7,10 @@ window.addEventListener('load', function() {
   let Startgettime;
   let Endgettime;
 
-//urlを取得
-let path = window.location.pathname;
-let nowpath ;
-console.log(path);
+  //urlを取得
+  let path = window.location.pathname;
+
+  console.log(path);
 
   button.addEventListener('click', function() {
     const videoPlayer = document.querySelector('video');
@@ -18,7 +18,7 @@ console.log(path);
       recording = false;
       button.textContent = '記録する';
       Endgettime = videoPlayer.currentTime;
-      sendData({ StartTime: Startgettime, EndTime: Endgettime });
+      sendData({ StartTime: Startgettime, EndTime: Endgettime, URL: path });
 
     } else {
       recording = true;
@@ -58,16 +58,19 @@ console.log(path);
 
 
     mutationsList.forEach(mutation => {
-      nowpath = window.location.pathname;
+
+      let nowpath = window.location.pathname;
           if(path === nowpath){
             return 
             //console.log("clear!!")
-          }else{
-            //console.log(path , nowpath);
-            path = nowpath;
-            console.log("urlの変更を検出しました");
-          }
+            }else{
+              console.log(path , nowpath);
+              path = nowpath;
+              console.log("urlの変更を検出しました");
+            }
           //console.log("変化が検出されました: ", mutation);
+
+          
 
           if (mutation.type === 'childList') {
               const timelineElement = document.querySelector('[data-uia="timeline"]');
