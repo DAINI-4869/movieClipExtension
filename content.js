@@ -7,6 +7,11 @@ window.addEventListener('load', function() {
   let Startgettime;
   let Endgettime;
 
+//urlを取得
+let path = window.location.pathname;
+let nowpath ;
+console.log(path);
+
   button.addEventListener('click', function() {
     const videoPlayer = document.querySelector('video');
     if (recording) {
@@ -40,11 +45,6 @@ window.addEventListener('load', function() {
   `;
   document.head.appendChild(style);
 
-//urlを取得
-let path = window.location.pathname;
-let nowpath ;
-console.log(path);
-
   function updateButtonPosition() {
     const timelineElement = document.querySelector('[data-uia="timeline"]');
     if (timelineElement) {
@@ -55,22 +55,22 @@ console.log(path);
   }
 
   function mutationCallback(mutationsList) {
-    mutationsList.forEach(mutation => {
-      // 変更が検出された場合の処理
-      mutationsList.forEach(function(mutation) {
+
+    mutationsList.forEach(function(mutation) {
       nowpath = window.location.pathname;
       if(path === nowpath){
-        return ;
+        return 
         //console.log("clear!!")
       }else{
-        console.log(path , nowpath);
+        //console.log(path , nowpath);
         path = nowpath;
         console.log("urlの変更を検出しました");
-      }
+        }
       //console.log("変化が検出されました: ", mutation);
-  });
+    });
 
 
+      mutationsList.forEach(mutation => {
           if (mutation.type === 'childList') {
               const timelineElement = document.querySelector('[data-uia="timeline"]');
               if (timelineElement) {
