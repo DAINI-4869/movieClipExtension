@@ -56,21 +56,19 @@ console.log(path);
 
   function mutationCallback(mutationsList) {
 
-    mutationsList.forEach(function(mutation) {
+
+    mutationsList.forEach(mutation => {
       nowpath = window.location.pathname;
-      if(path === nowpath){
-        return 
-        //console.log("clear!!")
-      }else{
-        //console.log(path , nowpath);
-        path = nowpath;
-        console.log("urlの変更を検出しました");
-        }
-      //console.log("変化が検出されました: ", mutation);
-    });
+          if(path === nowpath){
+            return 
+            //console.log("clear!!")
+          }else{
+            //console.log(path , nowpath);
+            path = nowpath;
+            console.log("urlの変更を検出しました");
+          }
+          //console.log("変化が検出されました: ", mutation);
 
-
-      mutationsList.forEach(mutation => {
           if (mutation.type === 'childList') {
               const timelineElement = document.querySelector('[data-uia="timeline"]');
               if (timelineElement) {
