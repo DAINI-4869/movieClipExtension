@@ -45,30 +45,6 @@ let path = window.location.pathname;
 let nowpath ;
 console.log(path);
 
-// MutationObserver を定義
-const urlObserver = new MutationObserver((mutationsList, observer) =>{
-
-  // 変更が検出された場合の処理
-
-  mutationsList.forEach(function(mutation) {
-    nowpath = window.location.pathname;
-    if(path === nowpath){
-      return ;
-      //console.log("clear!!")
-    }else{
-      //console.log(path , nowpath);
-      path = nowpath;
-      console.log("urlの変更を検出しました");
-      }
-    //console.log("変化が検出されました: ", mutation);
-  });
-});
-// 監視対象のDOM要素を指定（例: body全体）
-urlObserver.observe(document.body, {
-  childList: true, // 子要素の変更を監視
-  subtree: true    // 子孫要素も監視対象にする
-});
-
   function updateButtonPosition() {
     const timelineElement = document.querySelector('[data-uia="timeline"]');
     if (timelineElement) {
@@ -79,7 +55,22 @@ urlObserver.observe(document.body, {
   }
 
   function mutationCallback(mutationsList) {
-      mutationsList.forEach(mutation => {
+    mutationsList.forEach(mutation => {
+      // 変更が検出された場合の処理
+      mutationsList.forEach(function(mutation) {
+      nowpath = window.location.pathname;
+      if(path === nowpath){
+        return ;
+        //console.log("clear!!")
+      }else{
+        console.log(path , nowpath);
+        path = nowpath;
+        console.log("urlの変更を検出しました");
+      }
+      //console.log("変化が検出されました: ", mutation);
+  });
+
+
           if (mutation.type === 'childList') {
               const timelineElement = document.querySelector('[data-uia="timeline"]');
               if (timelineElement) {
