@@ -1,0 +1,17 @@
+{   
+  "manifest_version": 3,
+  "name": "netflix movie clipper",
+  "version": "1.0.0",
+  "description": "movie clipping",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+    "matches": [
+    "https://www.netflix.com/*"
+    ],
+      "js": ["content.js", "config.js"]
+    }
+  ]
+}
