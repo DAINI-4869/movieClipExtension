@@ -7,13 +7,16 @@ window.addEventListener('load', function() {
   let Startgettime;
   let Endgettime;
 
+  //urlを取得
+  let path = window.location.pathname; //このデータは　netflixの場合 /watch/00000000 のような出力をする。
+
   button.addEventListener('click', function() {
     const videoPlayer = document.querySelector('video');
     if (recording) {
       recording = false;
       button.textContent = '記録する';
       Endgettime = videoPlayer.currentTime;
-      sendData({ StartTime: Startgettime, EndTime: Endgettime });
+      sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path});
 
     } else {
       recording = true;
@@ -51,6 +54,15 @@ window.addEventListener('load', function() {
 
   function mutationCallback(mutationsList) {
       mutationsList.forEach(mutation => {
+
+        let nowpath = window.location.pathname;
+        
+          if(path != nowpath){
+            path = nowpath;
+            console.log("urlの変更を検出しました");
+          }
+
+
           if (mutation.type === 'childList') {
               const timelineElement = document.querySelector('[data-uia="timeline"]');
               if (timelineElement) {
@@ -65,7 +77,9 @@ window.addEventListener('load', function() {
                   }
               }
           }
-      });
+      }
+    
+    );
   }
 
   const observerOptions = {
