@@ -1,85 +1,71 @@
 window.addEventListener('load', function() {
-  // ボタンを一度作成しておく
-  const button = document.createElement('button');
-  button.id = 'overlay-button';
-  button.textContent = '記録する';
+  // ボタンとdivを一度作成しておく
+  const buttonMargin = document.createElement('div');
+  buttonMargin.style.minWidth = '3rem';
+  buttonMargin.style.width = '3rem';
+  const wrapButton = document.createElement('div');
+  const recordButton = document.createElement('button');
+  recordButton.id = 'overlay-button';
+  recordButton.style.backgroundColor = '#FF0000';
+  recordButton.style.color = '#FFFFFF';
+  recordButton.style.width = '44px';
+  recordButton.style.height = '44px';
+  recordButton.style.borderRadius = '50%'
+
   let recording = false;
   let Startgettime;
   let Endgettime;
+  let path = window.location.pathname; //getURL
 
-  //urlを取得
-  let path = window.location.pathname; //このデータは　netflixの場合 /watch/00000000 のような出力をする。
-
-  button.addEventListener('click', function() {
+  recordButton.addEventListener('click', function() {
     const videoPlayer = document.querySelector('video');
     if (recording) {
       recording = false;
-      button.textContent = '記録する';
+      recordButton.style.borderRadius = '50%'
       Endgettime = videoPlayer.currentTime;
       sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path});
-
     } else {
       recording = true;
-      button.textContent = '記録中';
+      recordButton.style.borderRadius = '0%'
       Startgettime = videoPlayer.currentTime;
     }
   });
 
-  // ボタンのスタイルを設定
-  const style = document.createElement('style');
-  style.textContent = `
-      #overlay-button {
-          position: absolute;
-          // top: 10px;
-          // left: 10px;
-          z-index: 1000;
-          padding: 10px 20px;
-          background-color: #ff0000;
-          color: #ffffff;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-      }
-  `;
-  document.head.appendChild(style);
-
-  function updateButtonPosition() {
-    const timelineElement = document.querySelector('[data-uia="timeline"]');
-    if (timelineElement) {
-        const rect = timelineElement.getBoundingClientRect();
-        button.style.top = rect.top + 100 + 'px';
-        button.style.left = rect.left + 'px';
+  function createButton() {
+    const controlsStandardElement = document.querySelector('[data-uia="controls-standard"]');
+    if (controlsStandardElement) {
+      const controlVolumeElement = document.querySelector('[data-uia="control-volume-high"]');
+      recordButton.className = controlVolumeElement.className;
+      wrapButton.className = controlVolumeElement.parentNode.className;
+      controlVolumeElement.parentNode.after(wrapButton);
+      wrapButton.appendChild(recordButton);
+      controlVolumeElement.parentNode.after(buttonMargin);
     }
   }
 
   function mutationCallback(mutationsList) {
-      mutationsList.forEach(mutation => {
-
-        let nowpath = window.location.pathname;
-        
-          if(path != nowpath){
-            path = nowpath;
-            console.log("urlの変更を検出しました");
-          }
-
-
-          if (mutation.type === 'childList') {
-              const timelineElement = document.querySelector('[data-uia="timeline"]');
-              if (timelineElement) {
-                  // 既にボタンが追加されていない場合のみ追加
-                  if (!document.getElementById('overlay-button')) {
-                      document.body.appendChild(button);
-                      updateButtonPosition();
-                  }
-              } else {
-                  if (document.getElementById('overlay-button')) {
-                      button.remove();
-                  }
-              }
-          }
+    mutationsList.forEach(mutation => {
+      let nowpath = window.location.pathname;
+      if(path != nowpath){
+        path = nowpath;
+        console.log("urlの変更を検出しました");
       }
-    
-    );
+
+      if (mutation.type === 'childList') {
+        const controlsForward10Element = document.querySelector('[data-uia="control-forward10"]'); // 広告時に表示しないため
+        if (controlsForward10Element) {
+          // 既にボタンが追加されていない場合のみ追加
+          if (!document.getElementById('overlay-button')) {
+              createButton();
+          }
+        } else {
+          if (document.getElementById('overlay-button')) {
+            buttonMargin.remove();
+            recordButton.remove();
+          }
+        }
+      }
+    });
   }
 
   const observerOptions = {
@@ -93,7 +79,7 @@ window.addEventListener('load', function() {
 
   // ページを離れたときにオブザーバーを停止
   window.addEventListener('beforeunload', function() {
-      observer.disconnect();
+    observer.disconnect();
   });
 });
 
