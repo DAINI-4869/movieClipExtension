@@ -15,15 +15,43 @@ window.addEventListener('load', function() {
   let recording = false;
   let Startgettime;
   let Endgettime;
-  let path = window.location.pathname; //getURL
+  //urlを取得
+  let path = window.location.pathname;
 
   recordButton.addEventListener('click', function() {
-    const videoPlayer = document.querySelector('video');
+    const videoPlayer = document.querySelector('video'); 
+    const allTitleName =  document.querySelector('[data-uia="video-title"]');    //titleの全情報を取得
     if (recording) {
+      let titleName;
+  
+      if(allTitleName){
+        const h4Element = allTitleName.querySelector('h4');
+
+        if(h4Element){
+          //シリーズ作品の場合
+          titleName = allTitleName.querySelector('h4').textContent;//エピソード名を取得
+          let episodeNumber = document.querySelector('div[data-uia="video-title"] span:nth-of-type(1)').textContent; //エピソード番号を取得
+          let subtitle = document.querySelector('div[data-uia="video-title"] span:nth-of-type(2)').textContent;    //サブタイトルを取得
+          Endgettime = videoPlayer.currentTime;
+          sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path , title: titleName , epnumber : episodeNumber}); 
+        } else {
+          //シリーズ作品ではない場合　
+          titlename = allTitleName.textContent;//エピソード名を取得
+          Endgettime = videoPlayer.currentTime;
+          sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path , title: titleName }); 
+          
+        }
+      }else{
+        //error時にも一応送れるだけ送れるようにしてある。
+        console.warn('[data-uia="video-title"] 属性を持つ要素が存在しません。');
+        Endgettime = videoPlayer.currentTime;
+        sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path }); 
+
+      }
+    
       recording = false;
       recordButton.style.borderRadius = '50%'
-      Endgettime = videoPlayer.currentTime;
-      sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path});
+
     } else {
       recording = true;
       recordButton.style.borderRadius = '0%'
@@ -43,14 +71,14 @@ window.addEventListener('load', function() {
     }
   }
 
+
   function mutationCallback(mutationsList) {
     mutationsList.forEach(mutation => {
       let nowpath = window.location.pathname;
       if(path != nowpath){
         path = nowpath;
-        console.log("urlの変更を検出しました");
+        console.log("urlの変更を検出しました"); 
       }
-
       if (mutation.type === 'childList') {
         const controlsForward10Element = document.querySelector('[data-uia="control-forward10"]'); // 広告時に表示しないため
         if (controlsForward10Element) {
@@ -72,6 +100,8 @@ window.addEventListener('load', function() {
       childList: true,
       subtree: true
   };
+  
+  
 
   // body要素を監視対象に設定
   const observer = new MutationObserver(mutationCallback);
