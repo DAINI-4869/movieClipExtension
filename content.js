@@ -19,15 +19,42 @@ window.addEventListener('load', function() {
   let path = window.location.pathname;// このデータは　netflixの場合 /watch/00000000 のような出力をする。
   //urlの変更をチェックするキー
   let checkurl = false; //　変更時、trueになります。使用後にfalseに戻しておいてください
-  
 
   recordButton.addEventListener('click', function() {
-    const videoPlayer = document.querySelector('video');
+    const videoPlayer = document.querySelector('video'); 
+    const alltitlename =  document.querySelector('[data-uia="video-title"]');    //titleの全情報を取得
     if (recording) {
+      let titlename;
+  
+      if(alltitlename){
+        const h4Element = alltitlename.querySelector('h4');
+
+        if(h4Element){
+          //シリーズ作品の場合
+          titlename = alltitlename.querySelector('h4').textContent;//エピソード名を取得
+          let episodenumber = document.querySelector('div[data-uia="video-title"] span:nth-of-type(1)').textContent; //エピソード番号を取得
+          let subtitle = document.querySelector('div[data-uia="video-title"] span:nth-of-type(2)').textContent;    //サブタイトルを取得
+
+          Endgettime = videoPlayer.currentTime;
+          sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path , title: titlename , epnumber : episodenumber}); 
+        } else {
+          //シリーズ作品ではない場合　
+          titlename = alltitlename.textContent;//エピソード名を取得
+
+          Endgettime = videoPlayer.currentTime;
+          sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path , title: titlename }); 
+          
+        }
+      }else{
+        //error時にも一応遅れるだけ送れるようにしてある。
+        console.log('[data-uia="video-title"] 属性を持つ要素が存在しません。');
+        Endgettime = videoPlayer.currentTime;
+        sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path }); 
+      }
+    
       recording = false;
       recordButton.style.borderRadius = '50%'
-      Endgettime = videoPlayer.currentTime;
-      sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path});
+
     } else {
       recording = true;
       recordButton.style.borderRadius = '0%'
@@ -80,6 +107,8 @@ window.addEventListener('load', function() {
       childList: true,
       subtree: true
   };
+  
+  
 
   // body要素を監視対象に設定
   const observer = new MutationObserver(mutationCallback);
