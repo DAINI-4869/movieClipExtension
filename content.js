@@ -36,7 +36,7 @@ window.addEventListener('load', function() {
           sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path , title: titleName , epnumber : episodeNumber}); 
         } else {
           //シリーズ作品ではない場合　
-          titlename = allTitleName.textContent;//エピソード名を取得
+          titleName = allTitleName.textContent;//エピソード名を取得
           Endgettime = videoPlayer.currentTime;
           sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path , title: titleName }); 
           
