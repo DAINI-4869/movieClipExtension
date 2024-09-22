@@ -11,7 +11,6 @@ window.addEventListener('load', function() {
   recordButton.style.width = '44px';
   recordButton.style.height = '44px';
   recordButton.style.borderRadius = '50%'
-
   let recording = false;
   let Startgettime;
   let Endgettime;
@@ -48,14 +47,13 @@ window.addEventListener('load', function() {
         sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path }); 
 
       }
-    
+      recordButton.innerHTML = `<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#000000"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
       recording = false;
-      recordButton.style.borderRadius = '50%'
-
     } else {
       recording = true;
-      recordButton.style.borderRadius = '0%'
       Startgettime = videoPlayer.currentTime;
+      recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" width="120%" height="120%" color="#ff0000"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
+
     }
   });
 
@@ -78,6 +76,7 @@ window.addEventListener('load', function() {
       if(path != nowpath){
         path = nowpath;
         console.log("urlの変更を検出しました"); 
+        recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#000000"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
       }
       if (mutation.type === 'childList') {
         const controlsForward10Element = document.querySelector('[data-uia="control-forward10"]'); // 広告時に表示しないため
@@ -85,6 +84,9 @@ window.addEventListener('load', function() {
           // 既にボタンが追加されていない場合のみ追加
           if (!document.getElementById('overlay-button')) {
               createButton();
+              recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#000000"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
+              recordButton.style.backgroundColor = 'transparent';
+              recordButton.style.color = 'transparent';
           }
         } else {
           if (document.getElementById('overlay-button')) {
