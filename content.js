@@ -80,7 +80,6 @@ window.addEventListener('load', function() {
         console.log("urlの変更を検出しました"); 
         //レコーディング中にurlの変更を検出した場合、レコーディング前に戻す
         recording = false;
-        recordButton.style.borderRadius = '50%'
       }
       if (mutation.type === 'childList') {
         const controlsForward10Element = document.querySelector('[data-uia="control-forward10"]'); // 広告時に表示しないため
