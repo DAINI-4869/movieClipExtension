@@ -115,7 +115,7 @@ window.addEventListener('load', () => {
   });
 
   recordButton.addEventListener('mouseleave', () => {
-    recordButton.removeProperty('transform');
+    recordButton.style.removeProperty('transform');
   });
 
   function addElements() {
