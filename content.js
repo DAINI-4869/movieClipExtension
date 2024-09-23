@@ -105,7 +105,9 @@ window.addEventListener('load', function() {
         sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path }); 
 
       }
+
       svgElement.setAttribute("color", "#FFFFFF");
+
       recording = false;
     } else {
       recording = true;
@@ -134,6 +136,7 @@ window.addEventListener('load', function() {
         path = nowpath;
         console.log("urlの変更を検出しました"); 
         //レコーディング中にurlの変更を検出した場合、レコーディング前に戻す
+
         svgElement.setAttribute("color", "#FFFFFF");
         recording = false;
       }
