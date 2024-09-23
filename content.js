@@ -10,7 +10,65 @@ window.addEventListener('load', function() {
   recordButton.style.color = '#FFFFFF';
   recordButton.style.width = '44px';
   recordButton.style.height = '44px';
-  recordButton.style.borderRadius = '50%'
+  // SVG要素の作成
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svgElement = document.createElementNS(svgNS, "svg");
+
+  // SVG属性の設定
+  svgElement.setAttribute("id", "Layer_1");
+  svgElement.setAttribute("data-name", "Layer 1");
+  svgElement.setAttribute("xmlns", svgNS);
+  svgElement.setAttribute("viewBox", "0 0 24 24");
+  svgElement.setAttribute("stroke-width", "1.5");
+  svgElement.setAttribute("width", "120%");
+  svgElement.setAttribute("height", "120%");
+  svgElement.setAttribute("color", "#FFFFFF");
+
+  // スタイル定義
+  const style = document.createElementNS(svgNS, "style");
+  style.textContent = ".cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}";
+  svgElement.appendChild(style);
+
+  // rect要素の作成
+  const rectElement = document.createElementNS(svgNS, "rect");
+  rectElement.setAttribute("class", "cls-637630c1c3a86d32eae6f029-1");
+  rectElement.setAttribute("x", "1.5");
+  rectElement.setAttribute("y", "9.14");
+  rectElement.setAttribute("width", "15.27");
+  rectElement.setAttribute("height", "12.41");
+  svgElement.appendChild(rectElement);
+
+  // polygon要素の作成 (1つ目)
+  const polygonElement1 = document.createElementNS(svgNS, "polygon");
+  polygonElement1.setAttribute("class", "cls-637630c1c3a86d32eae6f029-1");
+  polygonElement1.setAttribute("points", "16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73");
+  svgElement.appendChild(polygonElement1);
+
+  // circle要素の作成 (1つ目)
+  const circleElement1 = document.createElementNS(svgNS, "circle");
+  circleElement1.setAttribute("class", "cls-637630c1c3a86d32eae6f029-1");
+  circleElement1.setAttribute("cx", "4.84");
+  circleElement1.setAttribute("cy", "5.8");
+  circleElement1.setAttribute("r", "3.34");
+  svgElement.appendChild(circleElement1);
+
+  // circle要素の作成 (2つ目)
+  const circleElement2 = document.createElementNS(svgNS, "circle");
+  circleElement2.setAttribute("class", "cls-637630c1c3a86d32eae6f029-1");
+  circleElement2.setAttribute("cx", "13.43");
+  circleElement2.setAttribute("cy", "5.8");
+  circleElement2.setAttribute("r", "3.34");
+  svgElement.appendChild(circleElement2);
+
+  // polygon要素の作成 (2つ目)
+  const polygonElement2 = document.createElementNS(svgNS, "polygon");
+  polygonElement2.setAttribute("class", "cls-637630c1c3a86d32eae6f029-1");
+  polygonElement2.setAttribute("points", "7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77");
+  svgElement.appendChild(polygonElement2);
+
+  // SVG要素をrecordButtonに追加
+  recordButton.appendChild(svgElement);
+
   let recording = false;
   let Startgettime;
   let Endgettime;
@@ -47,13 +105,12 @@ window.addEventListener('load', function() {
         sendData({ StartTime: Startgettime, EndTime: Endgettime ,URL: path }); 
 
       }
-      recordButton.innerHTML = `<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#FFFFFF"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
+      svgElement.setAttribute("color", "#FFFFFF");
       recording = false;
     } else {
       recording = true;
       Startgettime = videoPlayer.currentTime;
-      recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" width="120%" height="120%" color="#ff0000"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
-
+      svgElement.setAttribute("color", "#FF0000");
     }
   });
 
@@ -77,7 +134,7 @@ window.addEventListener('load', function() {
         path = nowpath;
         console.log("urlの変更を検出しました"); 
         //レコーディング中にurlの変更を検出した場合、レコーディング前に戻す
-        recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#FFFFFF"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
+        svgElement.setAttribute("color", "#FFFFFF");
         recording = false;
       }
       if (mutation.type === 'childList') {
@@ -86,11 +143,6 @@ window.addEventListener('load', function() {
           // 既にボタンが追加されていない場合のみ追加
           if (!document.getElementById('overlay-button')) {
               createButton();
-              if(recording){
-                recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#FF0000"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
-              }else{
-                recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#FFFFFF"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
-              }
               recordButton.style.backgroundColor = 'transparent';
               recordButton.style.color = 'transparent';
           }
