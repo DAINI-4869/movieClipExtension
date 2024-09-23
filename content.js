@@ -5,7 +5,7 @@ window.addEventListener('load', function() {
   buttonMargin.style.width = '3rem';
   const wrapButton = document.createElement('div');
   const recordButton = document.createElement('button');
-  recordButton.id = 'overlay-button';
+  recordButton.id = 'record-button';
   recordButton.style.backgroundColor = '#FF0000';
   recordButton.style.color = '#FFFFFF';
   recordButton.style.width = '44px';
@@ -84,7 +84,7 @@ window.addEventListener('load', function() {
         const controlsForward10Element = document.querySelector('[data-uia="control-forward10"]'); // 広告時に表示しないため
         if (controlsForward10Element) {
           // 既にボタンが追加されていない場合のみ追加
-          if (!document.getElementById('overlay-button')) {
+          if (!document.getElementById('record-button')) {
               createButton();
               if(recording){
                 recordButton.innerHTML =`<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" width="120%" height="120%" color="#FF0000"><defs><style>.cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}</style></defs><rect class="cls-637630c1c3a86d32eae6f029-1" x="1.5" y="9.14" width="15.27" height="12.41"></rect><polygon class="cls-637630c1c3a86d32eae6f029-1" points="16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"></polygon><circle class="cls-637630c1c3a86d32eae6f029-1" cx="4.84" cy="5.8" r="3.34"></circle><circle class="cls-637630c1c3a86d32eae6f029-1" cx="13.43" cy="5.8" r="3.34"></circle><polygon class="cls-637630c1c3a86d32eae6f029-1" points="7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"></polygon></svg>`;
@@ -95,7 +95,7 @@ window.addEventListener('load', function() {
               recordButton.style.color = 'transparent';
           }
         } else {
-          if (document.getElementById('overlay-button')) {
+          if (document.getElementById('record-button')) {
             buttonMargin.remove();
             recordButton.remove();
           }
