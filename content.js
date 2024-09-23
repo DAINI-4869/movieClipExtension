@@ -115,7 +115,7 @@ window.addEventListener('load', () => {
   });
 
   recordButton.addEventListener('mouseleave', () => {
-    recordButton.style.transform = 'scale(1)';
+    recordButton.removeProperty('transform');
   });
 
   function addElements() {
@@ -154,6 +154,8 @@ window.addEventListener('load', () => {
           if (document.getElementById('record-button')) {
             buttonMargin.remove();
             recordButton.remove();
+            wrapButton.remove();
+            svgElement.remove();
           }
         }
       }
