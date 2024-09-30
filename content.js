@@ -141,7 +141,9 @@ window.addEventListener('load', () => {
       } else {
         console.warn('タイトル要素が見つかりません。');
       }
-
+      if(errorDataCheck()){
+        return;
+      }
       sendData(data);
       isRecording = false;
       svgElement.setAttribute("color", COLOR_DEFAULT);
