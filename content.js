@@ -141,7 +141,9 @@ window.addEventListener('load', () => {
       } else {
         console.warn('タイトル要素が見つかりません。');
       }
-
+      if(errorDataCheck()){
+        return;
+      }
       sendData(data);
       isRecording = false;
       svgElement.setAttribute("color", COLOR_DEFAULT);
@@ -149,6 +151,22 @@ window.addEventListener('load', () => {
       svgElement.setAttribute("color", COLOR_RECORDING);
       isRecording = true;
       startTime = videoPlayer.currentTime;
+    }
+  }
+  
+  function errorDataCheck(){
+    if(startTime > endTime){
+      [startTime,endTime] = [endTime,startTime];
+      console.log("時間入れ替え！！");
+    }
+    let checkSecond = endTime - startTime
+    checkSecond = Math.abs(checkSecond);
+    console.log(checkSecond);
+    if(checkSecond < 1){
+      svgElement.setAttribute("color", COLOR_RECORDING);
+      console.log("短いデータは不可");
+      recording = true;
+      return true;
     }
   }
 
