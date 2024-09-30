@@ -153,20 +153,62 @@ window.addEventListener('load', () => {
       startTime = videoPlayer.currentTime;
     }
   }
+  function errorDataCheck() {
+    // エラー番号を定数として定義
+    const ERROR_TIME_REVERSED = 1;
+    const ERROR_DATA_TOO_SHORT = 2;
+    const ERROR_TIME_REVERSED_AND_DATA_TOO_SHORT = 3;
   
-  function errorDataCheck(){
-    if(startTime > endTime){
-      [startTime,endTime] = [endTime,startTime];
-      console.log("時間入れ替え！！");
-    }
-    let checkSecond = endTime - startTime
-    checkSecond = Math.abs(checkSecond);
-    console.log(checkSecond);
-    if(checkSecond < 1){
-      svgElement.setAttribute("color", COLOR_RECORDING);
-      console.log("短いデータは不可");
-      recording = true;
-      return true;
+    let errorNumber = 0;
+  
+    try {
+      // startTimeがendTimeより大きい場合は時間を入れ替える
+      if (startTime > endTime) {
+        [startTime, endTime] = [endTime, startTime];
+        errorNumber = ERROR_TIME_REVERSED; // 時間逆転のエラー番号
+        console.log("時間入れ替え！！");
+        throw new Error("時間入れ替え！！");
+      }
+  
+      // 時間を入れ替えた後にcheckSecondを計算
+      let checkSecond = Math.abs(endTime - startTime);
+  
+      // データが短すぎる場合の処理
+      if (checkSecond < 1) {
+        svgElement.setAttribute("color", COLOR_RECORDING);
+        recording = true;
+  
+        // もし既に時間逆転が発生していた場合は両方のエラーを表現
+        if (errorNumber === ERROR_TIME_REVERSED) {
+          errorNumber = ERROR_TIME_REVERSED_AND_DATA_TOO_SHORT; // 両方のエラー
+          throw new Error("時間が逆転していて、かつデータが短すぎます");
+        }
+  
+        errorNumber = ERROR_DATA_TOO_SHORT; // データが短すぎるエラー番号
+        throw new Error("データが短すぎます");
+      }
+  
+      return false; // 正常処理の終了時にはfalseを返す
+  
+    } catch (error) {
+      // エラー番号に基づく処理をif-elseで行う
+      if (errorNumber === ERROR_TIME_REVERSED) {
+        // 時間が逆転している場合
+        console.error("エラーが発生しました: " + error.message);
+        return false;
+      } else if (errorNumber === ERROR_DATA_TOO_SHORT) {
+        // データが短すぎる場合
+        console.error("エラーが発生しました: " + error.message);
+        return true;
+      } else if (errorNumber === ERROR_TIME_REVERSED_AND_DATA_TOO_SHORT) {
+        // 時間が逆転していて、かつデータが短すぎる場合
+        console.error("エラーが発生しました: " + error.message);
+        return true;
+      } else {
+        // 予期しないエラー
+        console.error("不明なエラーが発生しました。");
+        return false;
+      }
     }
   }
 
