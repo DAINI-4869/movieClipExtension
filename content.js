@@ -153,6 +153,7 @@ window.addEventListener('load', () => {
       startTime = videoPlayer.currentTime;
     }
   }
+
   function errorDataCheck() {
     // エラー番号を定数として定義
     const ERROR_TIME_REVERSED = 1;
@@ -209,6 +210,7 @@ window.addEventListener('load', () => {
         console.error("不明なエラーが発生しました。");
         return false;
       }
+
     }
   }
 
