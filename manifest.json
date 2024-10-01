@@ -11,6 +11,7 @@
     "matches": [
     "https://www.netflix.com/*"
     ],
+      "css": ["content_button.css"],
       "js": ["content.js", "config.js"]
     }
   ]
