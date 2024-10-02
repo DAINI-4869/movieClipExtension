@@ -178,7 +178,6 @@
         if (controlVolumeElement) {
           recordButton.className = controlVolumeElement.className;
           recordButton.appendChild(svgElement);
-          console.log(svgElement);
           wrapButton.className = controlVolumeElement.parentNode.className;
           controlVolumeElement.parentNode.after(wrapButton);
           wrapButton.appendChild(recordButton);
@@ -219,7 +218,6 @@
    * @param {Object} dataToSend - 送信するデータ
    */
   function sendData(dataToSend) {
-    console.log(dataToSend);
     fetch(window.url, { // window.urlは別ファイルに定義済み
       method: 'POST',
       headers: {
