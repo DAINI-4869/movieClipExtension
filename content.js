@@ -113,65 +113,62 @@
     }
 
     function handleRecordButtonClick() {
-      const videoPlayer = document.querySelector(SELECTORS.videoPlayer);
-      const allTitleName = document.querySelector(SELECTORS.videoTitle);
+      try { // 関数内でエラーハンドリング
+        const videoPlayer = document.querySelector(SELECTORS.videoPlayer);
+        const allTitleName = document.querySelector(SELECTORS.videoTitle);
 
-      if (!videoPlayer) {
-        console.warn('ビデオプレーヤーが見つかりません。');
-        return;
-      }
+        if (!videoPlayer) {
+          throw new Error('ビデオプレーヤーが見つかりません。');
+        }
 
-      if (isRecording) {
-        endTime = videoPlayer.currentTime;
-        const data = {
-          StartTime: startTime,
-          EndTime: endTime,
-          URL: currentPath,
-        };
+        if (isRecording) {
+          endTime = videoPlayer.currentTime;
 
-        if (allTitleName) {
-          const h4Element = allTitleName.querySelector('h4');
-          if (h4Element) {
-            // シリーズ作品の場合
-            data.title = h4Element.textContent;
-            const episodeNumberElement = allTitleName.querySelector('span:nth-of-type(1)');
-            if (episodeNumberElement) {
-              data.epnumber = episodeNumberElement.textContent;
+          if(startTime > endTime){
+            throw new Error("録画終了時刻が開始時刻よりも早い値です");
+          }
+          const checkSecond = Math.abs(endTime - startTime);
+          if(checkSecond < 1){
+            svgElement.setAttribute("color", COLOR_RECORDING);
+            throw new Error("録画範囲が短すぎます");
+          }
+
+          const data = {
+            StartTime: startTime,
+            EndTime: endTime,
+            URL: currentPath,
+          };
+
+          if (allTitleName) {
+            const h4Element = allTitleName.querySelector('h4');
+            if (h4Element) {
+              // シリーズ作品の場合
+              data.title = h4Element.textContent;
+              const episodeNumberElement = allTitleName.querySelector('span:nth-of-type(1)');
+              if (episodeNumberElement) {
+                data.epnumber = episodeNumberElement.textContent;
+              }
+            } else {
+              // シリーズ作品ではない場合
+              data.title = allTitleName.textContent;
             }
           } else {
-            // シリーズ作品ではない場合
-            data.title = allTitleName.textContent;
+            throw new Error('タイトル要素が見つかりません。');
           }
+
+          sendData(data);
+          init();
         } else {
-          console.warn('タイトル要素が見つかりません。');
+          svgElement.setAttribute("color", COLOR_RECORDING);
+          isRecording = true;
+          startTime = videoPlayer.currentTime;
         }
-
-        if (errorDataCheck()) {
-          return;
-        }
-
-        sendData(data);
-        isRecording = false;
-        svgElement.setAttribute("color", COLOR_DEFAULT);
-      } else {
-        svgElement.setAttribute("color", COLOR_RECORDING);
-        isRecording = true;
-        startTime = videoPlayer.currentTime;
+      } catch (error) {
+        console.error(error);
+        // ユーザーにエラーを通知するUIをここに追加可能
+        alert(error.message); // 例: アラートで通知
+        init();
       }
-    }
-
-    function errorDataCheck(){
-      if(startTime > endTime){
-        [startTime, endTime] = [endTime, startTime];
-        console.warn("不正な時間");
-      }
-      const checkSecond = Math.abs(endTime - startTime);
-      if(checkSecond < 1){
-        svgElement.setAttribute("color", COLOR_RECORDING);
-        console.warn("短いデータは不可");
-        return true;
-      }
-      return false;
     }
 
     function addElements() {
@@ -190,27 +187,14 @@
     }
 
     function mutationCallback(mutationsList) {
-      let pathChanged = false;
-
       mutationsList.forEach(mutation => {
         const newPath = window.location.pathname;
         if (currentPath !== newPath) {
           currentPath = newPath;
-          pathChanged = true;
-          console.log("URLの変更を検出しました。");
-          svgElement.setAttribute("color", COLOR_DEFAULT);
-          isRecording = false;
+          console.log("URLの変更を検出");
+          init();
         }
       });
-
-      if (pathChanged) {
-        // 必要なリセット処理があればここに追加
-        isRecording = false;
-        startTime = null;
-        endTime = null;
-        svgElement.setAttribute("color", COLOR_DEFAULT);
-        console.log('ページが変更されたため、録画がリセットされました。');
-      }
 
       const controlsForward10Element = document.querySelector(SELECTORS.controlForward10);
       if (controlsForward10Element && !document.getElementById(BUTTON_ID)) {
@@ -220,6 +204,13 @@
         recordButton.remove();
       }
     }
+
+    function init() { // 必要なリセット処理があればここに追加
+      isRecording = false;
+      startTime = null;
+      endTime = null;
+      svgElement.setAttribute("color", COLOR_DEFAULT);
+    }
   });
 
   /**
@@ -227,27 +218,21 @@
    * @param {Object} dataToSend - 送信するデータ
    */
   function sendData(dataToSend) {
-    console.log(dataToSend);
-    fetch(window.url, {
+    fetch(window.url, { // window.urlは別ファイルに定義済み
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(dataToSend),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`サーバーエラー: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log('Success:', data);
-        // ユーザーに成功を通知するUIを追加可能
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        // ユーザーにエラーを通知するUIを追加可能
-      });
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Success:', data);
+      // ユーザーに成功を通知するUIを追加可能
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      // ユーザーにエラーを通知するUIを追加可能
+    });
   }
 })();
