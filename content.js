@@ -12,6 +12,9 @@
   };
 
   window.addEventListener('load', () => {
+    // インジェクションスクリプトの注入
+    injectScript('history_change.js');
+
     // 要素の作成
     const buttonMargin = createButtonMargin();
     const wrapButton = document.createElement('div');
@@ -26,7 +29,7 @@
 
     // イベントリスナーの設定
     recordButton.addEventListener('click', handleRecordButtonClick);
-    
+
     // MutationObserverの設定
     const observer = new MutationObserver(mutationCallback);
     observer.observe(document.body, { childList: true, subtree: true });
@@ -36,7 +39,28 @@
       observer.disconnect();
     });
 
+    window.addEventListener('historyChange', function(e) {
+      const detail = e.detail;
+      console.log('History changed:', detail);
+      init();
+
+      // 必要に応じてバックグラウンドスクリプトにメッセージを送信
+      chrome.runtime.sendMessage({
+        type: 'HISTORY_CHANGE',
+        data: detail
+      });
+    });
+
     // 関数定義
+
+    function injectScript(file, tag) {
+      const script = document.createElement('script');
+      script.src = chrome.runtime.getURL(file);
+      script.onload = function() {
+        this.remove();
+      };
+      (tag || document.head).appendChild(script);
+    }
 
     function createButtonMargin() {
       const margin = document.createElement('div');
@@ -187,14 +211,6 @@
     }
 
     function mutationCallback(mutationsList) {
-      mutationsList.forEach(mutation => {
-        const newPath = window.location.pathname;
-        if (currentPath !== newPath) {
-          currentPath = newPath;
-          console.log("URLの変更を検出");
-          init();
-        }
-      });
 
       const controlsForward10Element = document.querySelector(SELECTORS.controlForward10);
       if (controlsForward10Element && !document.getElementById(BUTTON_ID)) {
