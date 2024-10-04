@@ -1,5 +1,3 @@
-// injectedScript.js
-
 (function() {
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
