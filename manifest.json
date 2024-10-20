@@ -8,10 +8,19 @@
   ],
   "content_scripts": [
     {
-    "matches": [
-    "https://www.netflix.com/*"
-    ],
-      "js": ["content.js", "config.js"]
+      "matches": ["https://www.netflix.com/*"],
+      "css": ["content_button.css"],
+      "js": ["content.js", "config.js"],
+      "run_at": "document_idle"
     }
-  ]
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": ["https://www.netflix.com/*"],
+      "resources": ["history_change.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }
