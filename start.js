@@ -1,34 +1,12 @@
 (function() {
-    'use strict';
-
-    // オーバーライドコードを文字列として定義
-    const overrideCode = `
-        (function() {
-            const originalPushState = history.pushState;
-            const originalReplaceState = history.replaceState;
-
-            history.pushState = function(state, title, url) {
-                const result = originalPushState.apply(this, arguments);
-                window.dispatchEvent(new Event('locationchange'));
-                return result;
-            };
-
-            history.replaceState = function(state, title, url) {
-                const result = originalReplaceState.apply(this, arguments);
-                window.dispatchEvent(new Event('locationchange'));
-                return result;
-            };
-
-            window.addEventListener('popstate', function() {
-                window.dispatchEvent(new Event('locationchange'));
-            });
-        })();
-    `;
-
-    // <script>タグを作成し、オーバーライドコードを挿入
+  function injectScript(file, tag) {
     const script = document.createElement('script');
-    script.textContent = overrideCode;
-    document.documentElement.appendChild(script);
-    script.parentNode.removeChild(script);
+    script.src = chrome.runtime.getURL(file);
+    script.onload = function() {
+      this.remove();
+    };
+    (tag || document.head).appendChild(script);
+  }
 
+  injectScript("history_change.js");
 })();
