@@ -1,0 +1,6 @@
+#record-button {
+    transition: transform 0.3s;
+}
+#record-button:hover {
+    transform: scale(1.3);
+}
