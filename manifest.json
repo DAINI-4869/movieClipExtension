@@ -17,7 +17,13 @@
       "css": ["content_button.css"],
       "js": ["content.js", "config.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["http://localhost:3000/*"],
+      "js": ["playClipContent.js"]
+    
     }
+
 
   ],
   "web_accessible_resources": [
