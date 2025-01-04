@@ -25,7 +25,7 @@
     let isRecording = false;
     let startTime;
     let endTime;
-    let currentPath = window.location.pathname;
+    let currentPath;
 
     // イベントリスナーの設定
     recordButton.addEventListener('click', handleRecordButtonClick);
@@ -147,7 +147,7 @@
 
         if (isRecording) {
           endTime = videoPlayer.currentTime;
-
+          currentPath = window.location.pathname;
           if(startTime > endTime){
             throw new Error("録画終了時刻が開始時刻よりも早い値です");
           }
