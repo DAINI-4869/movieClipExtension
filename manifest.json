@@ -22,6 +22,10 @@
       "run_at": "document_idle"
     },
     {
+      "matches": ["https://www.netflix.com/*"],
+      "js": ["playClipNetflix.js"]
+    },
+    {
       "matches": ["http://localhost:3000/*"],
       "js": ["playClipContent.js"]
     

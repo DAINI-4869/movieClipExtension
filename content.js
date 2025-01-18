@@ -229,21 +229,7 @@
     }
   });
 
-  //再生機能
-  //clip側でデータを受け取る起動
-  //再生機能
-  //繰り返し再生巻数
-  //適当なclipを推奨し、再生
 
-
-  function playClipSystem(starttime,endtime){
-    videoPlayer.currentTime =starttime;
-    if(videoPlayer.currentTime == endtime){
-      videoPlayer.currentTime =starttime;
-    };
-
-
-  }
   /**
    * データをサーバーに送信する関数
    * @param {Object} dataToSend - 送信するデータ

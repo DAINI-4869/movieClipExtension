@@ -8,10 +8,17 @@ window.addEventListener("clipSelected", () => {
     const cookies = getCookies();
     // 取得したCookieをコンソールに表示
     console.log("Cookies on video:", cookies);
-    //データを変数に格納
-    
-    //再生機能を起動
 
+    //再生機能を起動
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.action === "setGlobalValue") {
+        updateSettings('playClipSystemKey', message.value);
+        updateSettings('playClipData', getCookies());
+          sendResponse({ status: "success" });
+          console.log("startSystem:", settings.playClipSystemKey);
+      }
+  });
+  
 });
 
 
@@ -32,6 +39,7 @@ function getCookies() {
 
   return cookieObj;
 }
+
 
 
 
