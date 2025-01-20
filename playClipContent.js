@@ -8,8 +8,12 @@ window.addEventListener("clipSelected", () => {
     const cookies = getCookies();
     // 取得したCookieをコンソールに表示
     console.log("Cookies on video:", cookies);
-
+    // background.jsにメッセージを送信
+    chrome.runtime.sendMessage({ greeting: "こんにちは" }, function(response) {
+      console.log("background.jsからの応答:", response.reply);
+    });
     //再生機能を起動
+    /*
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.action === "setGlobalValue") {
         updateSettings('playClipSystemKey', message.value);
@@ -17,7 +21,8 @@ window.addEventListener("clipSelected", () => {
           sendResponse({ status: "success" });
           console.log("startSystem:", settings.playClipSystemKey);
       }
-  });
+    });
+    */
   
 });
 
