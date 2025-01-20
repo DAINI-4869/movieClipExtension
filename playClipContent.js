@@ -5,24 +5,11 @@ window.addEventListener("clipListElementsRendered", () => {
 window.addEventListener("clipSelected", () => {
     console.log("このclipを選択しました！");
     //cookieを読み込む
-    const cookies = getCookies();
+    // Clipの再生用データ
+    const playClipData = getCookies();
     // 取得したCookieをコンソールに表示
-    console.log("Cookies on video:", cookies);
-    // background.jsにメッセージを送信
-    chrome.runtime.sendMessage({ greeting: "こんにちは" }, function(response) {
-      console.log("background.jsからの応答:", response.reply);
-    });
-    //再生機能を起動
-    /*
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.action === "setGlobalValue") {
-        updateSettings('playClipSystemKey', message.value);
-        updateSettings('playClipData', getCookies());
-          sendResponse({ status: "success" });
-          console.log("startSystem:", settings.playClipSystemKey);
-      }
-    });
-    */
+    console.log("Cookies on video:", playClipData);
+    chrome.storage.local.set({ clip: playClipData});
   
 });
 
