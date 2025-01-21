@@ -10,6 +10,8 @@ window.addEventListener("clipSelected", () => {
     // 取得したCookieをコンソールに表示
     console.log("Cookies on video:", playClipData);
     chrome.storage.local.set({ clip: playClipData});
+    //再生機能の起動キー 1が起動 0が不活性化
+    chrome.storage.local.set({ playClipSystemKey: 1});
   
 });
 
