@@ -3,8 +3,17 @@
 //再生機能
 //繰り返し再生巻数
 //適当なclipを推奨し、再生
+
+//clipのデータ
 let starttime;
 let endtime;
+let clipName; 
+let title;
+let username;
+
+let videoPlayer; // スコープ内で保持するために追加
+//条件を満たしたかどうか
+let conditionLoadVideo = false;//ビデオが読み込まれたかどうか
 
 window.addEventListener("load", () => {
   // ローカルストレージから "playClipSystemKey" データを取得
@@ -24,14 +33,14 @@ window.addEventListener("load", () => {
           console.log("取得するデータ:",clipData);
 
           endtime = clipData.endtime;
-          const name = clipData.name;
+          clipName = clipData.name;
           starttime = clipData.starttime;
-          const title = clipData.title;
-          const username = clipData.username;
+          title = clipData.title;
+          username = clipData.username;
 
           console.log(`タイトル: ${title}`);
           console.log(`ユーザー名: ${username}`);
-          console.log(`クリップ名: ${name}`);
+          console.log(`クリップ名: ${clipName}`);
           console.log(`開始時間: ${starttime}`);
           console.log(`終了時間: ${endtime}`);
         } else {
@@ -52,21 +61,32 @@ window.addEventListener("load", () => {
   };
 
   function initializeVideoPlayer() {
-    const videoPlayer = document.querySelector(SELECTORS.videoPlayer);
+    videoPlayer = document.querySelector(SELECTORS.videoPlayer);
     if (videoPlayer) {
-      // ビデオプレイヤーの現在の再生時間を取得
-      const currentTime = videoPlayer.currentTime;
-      console.log(`現在の再生時間: ${currentTime}`);
-      if(starttime < currentTime){
-        playClipSystem(starttime,endtime); //再生機能
-      }
-   
+      // ビデオプレイヤーが見つかった場合の処理
+      if(conditionLoadVideo === false){
+        console.log("ビデオプレイヤーが見つかりました");
+        conditionLoadVideo = true;
+        console.log("フラグが立ちました");
+        console.log(conditionLoadVideo);
+        console.log("再生機能を起動します");
+        videoPlayer.pause();
+        // 2秒遅延して関数を実行
+        setTimeout(() => {
+          console.log("2秒後に実行されました");
+          videoPlayer.play();
+          setTimeout(() => {
+          videoPlayer.currentTime = 100000;
+          }, 1000);
+        }, 2000);
+
+      };
+
     } else {
       console.log("ビデオプレイヤーが見つかりません");
       //読み込み時最初はビデオプレイヤーが見つからない。
     }
   }
-
   // 初期化関数を呼び出し
   initializeVideoPlayer();
 
@@ -83,10 +103,7 @@ window.addEventListener("load", () => {
 
 });
 
-window.addEventListener('beforeunload', () => {
-  //起動終了
-});
-  
+
 //clip.resultを引数にする関数
 function overLoadView(data){
   if (!data.name || !data.title || !data.username || !data.starttime || !data.endtime) {
@@ -103,8 +120,6 @@ function overLoadView(data){
 
 //再生機能
 function playClipSystem(starttime, endtime) {
-
-  const videoPlayer = document.querySelector('video');
   if (videoPlayer) {
     console.log('動画プレーヤーが見つかりました。');
     console.log(`再生開始 : ${starttime}`);
@@ -112,6 +127,26 @@ function playClipSystem(starttime, endtime) {
     console.log(`終了時間 : ${endtimetime}`);
       
   }
+}
+
+function checkConditionTime(starttime, endtime){
+  //動作開始
+  const interval = 100; 
+  const intervalId = setInterval(() => {
+    const video = document.querySelector('video');
+    if (video) {
+      const currentTime = video.currentTime;
+      console.log(`現在の再生時間: ${currentTime}`);
+      if (currentTime >= endtime) {
+        console.log("再生終了");
+        video.pause();
+        clearInterval(intervalId); // インターバルを停止
+      }
+    } else {
+      console.error("ビデオプレイヤーが見つかりません");
+      clearInterval(intervalId); // インターバルを停止
+    }
+  }, interval);
 }
 /*
   const SELECTORS = {
