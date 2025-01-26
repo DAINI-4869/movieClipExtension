@@ -75,9 +75,12 @@ window.addEventListener("load", () => {
         setTimeout(() => {
           console.log("2秒後に実行されました");
           videoPlayer.play();
+
           setTimeout(() => {
-          videoPlayer.currentTime = 100000;
-          }, 1000);
+            videoPlayer.currentTime = 100;
+            setTimeout = function() {}; setInterval = function() {};
+          }, 10);
+
         }, 2000);
 
       };
