@@ -23,6 +23,17 @@
       "run_at": "document_idle"
     },
     {
+      "matches": ["https://www.amazon.co.jp/gp/*"],
+      "js": ["inject_script.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["https://www.amazon.co.jp/gp/video/detail/*"],
+      "css": ["content_button.css"],
+      "js": ["contentForAmazonPrime.js", "config.js"],
+      "run_at": "document_idle"
+    },
+    {
       "matches": ["https://www.netflix.com/*"],
       "js": ["playClipNetflix.js"]
     },

@@ -59,13 +59,24 @@ window.addEventListener("load", () => {
     currentTimeDisplay: '.current-time-display', // 再生時間を表示する要素のセレクタ
     // 他のセレクタ
   };
+  videoPlayer = document.querySelector(SELECTORS.videoPlayer);
+
+  videoPlayer.addEventListener("loadedmetadata", () => {
+    console.log("ビデオのメタデータが読み込まれました");
+    console.log("ビデオの長さ:", videoPlayer.duration);
+    console.log("ビデオの現在の再生時間:", videoPlayer.currentTime);
+  });
+  videoPlayer.addEventListener("error", (e) => {
+    console.error("ビデオの読み込みに失敗しました:", e);
+  });
+
+  
 
   function initializeVideoPlayer() {
-    videoPlayer = document.querySelector(SELECTORS.videoPlayer);
+    
     if (videoPlayer) {
       // ビデオプレイヤーが見つかった場合の処理
       if(conditionLoadVideo === false){
-        console.log("ビデオプレイヤーが見つかりました");
         conditionLoadVideo = true;
         console.log("フラグが立ちました");
         console.log(conditionLoadVideo);
@@ -77,7 +88,7 @@ window.addEventListener("load", () => {
           videoPlayer.play();
 
           setTimeout(() => {
-            videoPlayer.currentTime = 100;
+            videoPlayer.volume = 0.7;
             setTimeout = function() {}; setInterval = function() {};
           }, 10);
 
