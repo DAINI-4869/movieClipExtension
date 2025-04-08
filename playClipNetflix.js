@@ -59,7 +59,7 @@ window.addEventListener("load", () => {
     currentTimeDisplay: '.current-time-display', // 再生時間を表示する要素のセレクタ
     // 他のセレクタ
   };
-  videoPlayer = document.querySelector(SELECTORS.videoPlayer);
+  const videoPlayer = document.querySelector(SELECTORS.videoPlayer);
 
   videoPlayer.addEventListener("loadedmetadata", () => {
     console.log("ビデオのメタデータが読み込まれました");
@@ -81,18 +81,6 @@ window.addEventListener("load", () => {
         console.log("フラグが立ちました");
         console.log(conditionLoadVideo);
         console.log("再生機能を起動します");
-        videoPlayer.pause();
-        // 2秒遅延して関数を実行
-        setTimeout(() => {
-          console.log("2秒後に実行されました");
-          videoPlayer.play();
-
-          setTimeout(() => {
-            videoPlayer.volume = 0.7;
-            setTimeout = function() {}; setInterval = function() {};
-          }, 10);
-
-        }, 2000);
 
       };
 
@@ -145,7 +133,7 @@ function playClipSystem(starttime, endtime) {
 
 function checkConditionTime(starttime, endtime){
   //動作開始
-  const interval = 100; 
+  const interval = 1; 
   const intervalId = setInterval(() => {
     const video = document.querySelector('video');
     if (video) {
@@ -161,6 +149,12 @@ function checkConditionTime(starttime, endtime){
       clearInterval(intervalId); // インターバルを停止
     }
   }, interval);
+}
+
+function replayClip() {
+  //他のclipをお勧めする画面を表示する処理
+  // ページをリロードする処理
+  location.reload();
 }
 /*
   const SELECTORS = {
