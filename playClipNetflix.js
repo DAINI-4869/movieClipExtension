@@ -1,167 +1,147 @@
-//再生機能
-//clip側でデータを受け取る起動
-//再生機能
-//繰り返し再生巻数
-//適当なclipを推奨し、再生
+// == Netflix Clip Player Content Script ==
+// This content‑script plays a specific clip on Netflix between starttime and endtime
+// that are stored in chrome.storage.local under the key "clip".
+// -----------------------------------------------------------------------------
 
-//clipのデータ
-let starttime;
-let endtime;
-let clipName; 
-let title;
-let username;
+(() => {
+  'use strict';
 
-let videoPlayer; // スコープ内で保持するために追加
-//条件を満たしたかどうか
-let conditionLoadVideo = false;//ビデオが読み込まれたかどうか
+  // ---------------------------------------------------------------------------
+  // Globals
+  // ---------------------------------------------------------------------------
+  let videoPlayer = null;   // <video> element reference
+  let clipData    = null;   // { starttime, endtime, name, title, username }
 
-window.addEventListener("load", () => {
-  // ローカルストレージから "playClipSystemKey" データを取得
-  chrome.storage.local.get(["playClipSystemKey","clip"], (result) => {
-    const playClipSystemKey = result.playClipSystemKey; // 結果から取得
-    if (playClipSystemKey === 1) {
-      // "clip" データを取得
-      chrome.storage.local.get(["clip"], (clipResult) => {
+  // End-time detection tolerance (seconds)
+  const EPSILON = 0.05;
+  let countdownIntervalId = null;
+
+  // ---------------------------------------------------------------------------
+  // Add clip tag to URL if missing
+  // ---------------------------------------------------------------------------
+  function ensureClipTagInURL() {
+    if (!window.location.search.includes('clip=1')) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('clip', '1');
+      window.location.href = url.toString();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 1) Read clip info from chrome.storage.local
+  // ---------------------------------------------------------------------------
+  function loadClipFromStorage() {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get(['playClipSystemKey', 'clip'], res => {
         if (chrome.runtime.lastError) {
-          // エラーがある場合の処理
-          console.error("データの取得に失敗しました:", chrome.runtime.lastError);
-        } else if (clipResult.clip) {
-          // データ取得成功時の処理
-          //取得したデータをわける
-          const clipData = clipResult.clip;
-          console.log("取得したデータ:", clipResult.clip);
-          console.log("取得するデータ:",clipData);
+          return reject(chrome.runtime.lastError);
+        }
 
-          endtime = clipData.endtime;
-          clipName = clipData.name;
-          starttime = clipData.starttime;
-          title = clipData.title;
-          username = clipData.username;
-
-          console.log(`タイトル: ${title}`);
-          console.log(`ユーザー名: ${username}`);
-          console.log(`クリップ名: ${clipName}`);
-          console.log(`開始時間: ${starttime}`);
-          console.log(`終了時間: ${endtime}`);
+        if (res.playClipSystemKey === 1 && res.clip) {
+          clipData = res.clip;
+          console.info('[Clip] loaded:', clipData);
+          resolve();
         } else {
-          // データが存在しない場合の処理
-          console.warn("clip データが存在しません 起動を終了します。");
-          chrome.storage.local.set({ playClipSystemKey: 0});
+          chrome.storage.local.set({ playClipSystemKey: 0 });
+          reject(new Error('[Clip] No clip data or playClipSystemKey !== 1'));
         }
       });
-    } else {
-      console.log("playClipSystemKey が 1 ではありません");
-    }
-  });
-
-  const SELECTORS = {
-    videoPlayer: 'video',
-    currentTimeDisplay: '.current-time-display', // 再生時間を表示する要素のセレクタ
-    // 他のセレクタ
-  };
-  const videoPlayer = document.querySelector(SELECTORS.videoPlayer);
-
-  videoPlayer.addEventListener("loadedmetadata", () => {
-    console.log("ビデオのメタデータが読み込まれました");
-    console.log("ビデオの長さ:", videoPlayer.duration);
-    console.log("ビデオの現在の再生時間:", videoPlayer.currentTime);
-  });
-  videoPlayer.addEventListener("error", (e) => {
-    console.error("ビデオの読み込みに失敗しました:", e);
-  });
-
-  
-
-  function initializeVideoPlayer() {
-    
-    if (videoPlayer) {
-      // ビデオプレイヤーが見つかった場合の処理
-      if(conditionLoadVideo === false){
-        conditionLoadVideo = true;
-        console.log("フラグが立ちました");
-        console.log(conditionLoadVideo);
-        console.log("再生機能を起動します");
-
-      };
-
-    } else {
-      console.log("ビデオプレイヤーが見つかりません");
-      //読み込み時最初はビデオプレイヤーが見つからない。
-    }
-  }
-  // 初期化関数を呼び出し
-  initializeVideoPlayer();
-
-  // MutationObserverを使用してDOMの変更を監視
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.addedNodes.length > 0) {
-        initializeVideoPlayer();
-      }
     });
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
-});
-
-
-//clip.resultを引数にする関数
-function overLoadView(data){
-  if (!data.name || !data.title || !data.username || !data.starttime || !data.endtime) {
-    throw new Error("JSON オブジェクトに必要なプロパティがありません");
   }
-  // コンソールに内容を出力
-  console.log(`タイトル: ${data.title}`);
-  console.log(`名前: ${data.name}`);
-  console.log(`ユーザー名: ${data.username}`);
-  console.log(`開始時間: ${data.starttime}`);
-  console.log(`終了時間: ${data.endtime}`);
 
-}
+  // ---------------------------------------------------------------------------
+  // 2) Wait for <video> element to appear (Netflix inserts it dynamically)
+  // ---------------------------------------------------------------------------
+  function waitForVideoElement() {
+    return new Promise(resolve => {
+      const existing = document.querySelector('video');
+      if (existing) return resolve(existing);
 
-//再生機能
-function playClipSystem(starttime, endtime) {
-  if (videoPlayer) {
-    console.log('動画プレーヤーが見つかりました。');
-    console.log(`再生開始 : ${starttime}`);
-    video.currentTime = starttime;
-    console.log(`終了時間 : ${endtimetime}`);
-      
+      const observer = new MutationObserver(() => {
+        const v = document.querySelector('video');
+        if (v) {
+          observer.disconnect();
+          resolve(v);
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
   }
-}
 
-function checkConditionTime(starttime, endtime){
-  //動作開始
-  const interval = 1; 
-  const intervalId = setInterval(() => {
-    const video = document.querySelector('video');
-    if (video) {
-      const currentTime = video.currentTime;
-      console.log(`現在の再生時間: ${currentTime}`);
-      if (currentTime >= endtime) {
-        console.log("再生終了");
-        video.pause();
-        clearInterval(intervalId); // インターバルを停止
-      }
-    } else {
-      console.error("ビデオプレイヤーが見つかりません");
-      clearInterval(intervalId); // インターバルを停止
+  // ---------------------------------------------------------------------------
+  // 3) Initialize after both clip data & video element are ready
+  // ---------------------------------------------------------------------------
+  async function init() {
+    // URLにclip=1が付いていなければ追加してリロード
+    ensureClipTagInURL();
+
+    try {
+      await loadClipFromStorage();
+      videoPlayer = await waitForVideoElement();
+      setupPlayer();
+    } catch (err) {
+      console.error('[Clip] Initialization failed:', err);
+      return;
     }
-  }, interval);
-}
+  }
 
-function replayClip() {
-  //他のclipをお勧めする画面を表示する処理
-  // ページをリロードする処理
-  location.reload();
-}
-/*
-  const SELECTORS = {
-    videoPlayer: 'video',
-    videoTitle: '[data-uia="video-title"]',
-    controlsStandard: '[data-uia="controls-standard"]',
-    controlVolumeHigh: '[data-uia="control-volume-high"]',
-    controlForward10: '[data-uia="control-forward10"]',
-  };
-*/
+  // ---------------------------------------------------------------------------
+  // 4) Set up listeners and monitor for endtime only
+  // ---------------------------------------------------------------------------
+  function setupPlayer() {
+    const end = Number(clipData.endtime);
+
+    if (videoPlayer.readyState >= 1) {
+      console.info('[Video] metadata already available, skipping wait.');
+      monitorClipEnd(end);
+      startCountdownLogger(end);
+    } else {
+      videoPlayer.addEventListener('loadedmetadata', () => {
+        console.info('[Video] metadata loaded. duration =', videoPlayer.duration);
+        monitorClipEnd(end);
+        startCountdownLogger(end);
+      });
+    }
+
+    videoPlayer.addEventListener('error', e => {
+      console.error('[Video] error:', e);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5) Stop when reaching the end
+  // ---------------------------------------------------------------------------
+  function monitorClipEnd(end) {
+    function onTimeUpdate() {
+      if (videoPlayer.currentTime + EPSILON >= end) {
+        console.info('[Clip] Reached end, pausing and reloading.');
+        videoPlayer.pause();
+        videoPlayer.removeEventListener('timeupdate', onTimeUpdate);
+
+        clearInterval(countdownIntervalId);
+        window.location.reload();
+      }
+    }
+    videoPlayer.addEventListener('timeupdate', onTimeUpdate);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 6) Log remaining time until end every second
+  // ---------------------------------------------------------------------------
+  function startCountdownLogger(end) {
+    if (countdownIntervalId !== null) clearInterval(countdownIntervalId);
+
+    countdownIntervalId = setInterval(() => {
+      if (!videoPlayer) return;
+      const remaining = Math.max(0, end - videoPlayer.currentTime);
+      console.log(`[Countdown] ${remaining.toFixed(1)} seconds remaining until end.`);
+    }, 1000);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Kick things off when the page finishes loading
+  // ---------------------------------------------------------------------------
+  window.addEventListener('load', init);
+
+})();
