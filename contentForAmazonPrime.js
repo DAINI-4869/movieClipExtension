@@ -19,12 +19,8 @@ function waitForVideoAndWatch() {
     } else {
       console.log("指定の要素は見つかりませんでした。");
     }
-    
+
   }, 500);
 }
 
 waitForVideoAndWatch();
-
-
-
-

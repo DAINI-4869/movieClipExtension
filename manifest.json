@@ -1,57 +1,77 @@
-{   
+{
   "manifest_version": 3,
   "name": "netflix movie clipper",
   "version": "1.0.0",
   "description": "movie clipping 001",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "http://localhost:3000/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["https://www.netflix.com/*"],
-      "js": ["inject_script.js"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "js": [
+        "inject_script.js"
+      ]
     },
     {
       "matches": ["https://www.netflix.com/*"],
-      "css": ["content_button.css"],
-      "js": ["content.js", "config.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "css": [
+        "content_button.css"
+      ],
+      "js": [
+        "config.js",
+        "content.js",
+        "playClipNetflix.js"
+      ]
     },
     {
-      "matches": ["https://www.amazon.co.jp/gp/*"],
-      "js": ["inject_script.js"],
-      "run_at": "document_end"
+      "matches": [
+        "https://www.amazon.co.jp/gp/*",
+        "https://www.amazon.co.jp/*"
+      ],
+      "run_at": "document_end",
+      "js": [
+        "inject_script.js"
+      ]
     },
     {
-      "matches": ["https://www.amazon.co.jp/*"],
-      "css": ["content_button.css"],
-      "js": ["contentForAmazonPrime.js", "config.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": ["https://www.netflix.com/*"],
-      "js": ["playClipNetflix.js"]
+      "matches": [
+        "https://www.amazon.co.jp/gp/*",
+        "https://www.amazon.co.jp/*"
+      ],
+      "run_at": "document_idle",
+      "css": [
+        "content_button.css"
+      ],
+      "js": [
+        "config.js",
+        "contentForAmazonPrime.js"
+      ]
     },
     {
       "matches": ["http://localhost:3000/*"],
-      "js": ["playClipContent.js"]
-    
+      "run_at": "document_idle",
+      "js": [
+        "playClipContent.js"
+      ]
     }
-
-
   ],
   "web_accessible_resources": [
     {
       "matches": ["https://www.netflix.com/*"],
-      "resources": ["history_change.js"]
+      "resources": [
+        "history_change.js"
+      ]
     }
-  ],
-  "background": {
-    "service_worker": "background.js"
-  }
+  ]
 }

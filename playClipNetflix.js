@@ -1,13 +1,8 @@
-// == Netflix Clip Player Content Script ==
-// This content‑script plays a specific clip on Netflix between starttime and endtime
-// that are stored in chrome.storage.local under the key "clip".
-// -----------------------------------------------------------------------------
-
 (() => {
   'use strict';
 
   // ---------------------------------------------------------------------------
-  // Globals
+  // グローバル変数の定義
   // ---------------------------------------------------------------------------
   let videoPlayer = null;   // <video> element reference
   let clipData    = null;   // { starttime, endtime, name, title, username }
@@ -17,7 +12,8 @@
   let countdownIntervalId = null;
 
   // ---------------------------------------------------------------------------
-  // Add clip tag to URL if missing
+  // URLに "clip=1" が含まれていない場合は追加し、ページをリロード
+  // 理由：SPAのURL状態管理用フラグとして使用するため
   // ---------------------------------------------------------------------------
   function ensureClipTagInURL() {
     if (!window.location.search.includes('clip=1')) {
@@ -28,19 +24,20 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 1) Read clip info from chrome.storage.local
+  // Chrome拡張のローカルストレージからclipデータを読み込む関数
+  // playClipSystemKeyが1かつclipデータが存在する時だけ有効
   // ---------------------------------------------------------------------------
   function loadClipFromStorage() {
     return new Promise((resolve, reject) => {
       chrome.storage.local.get(['playClipSystemKey', 'clip'], res => {
         if (chrome.runtime.lastError) {
-          return reject(chrome.runtime.lastError);
+          return reject(chrome.runtime.lastError);// 読み取りエラー処理
         }
 
         if (res.playClipSystemKey === 1 && res.clip) {
           clipData = res.clip;
           console.info('[Clip] loaded:', clipData);
-          resolve();
+          resolve(); // 読み込み成功
         } else {
           chrome.storage.local.set({ playClipSystemKey: 0 });
           reject(new Error('[Clip] No clip data or playClipSystemKey !== 1'));
@@ -50,7 +47,8 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 2) Wait for <video> element to appear (Netflix inserts it dynamically)
+  // Netflixの<video>タグが出現するまで待つ（SPAなので後からDOMに追加される）
+  // DOM変更を監視して、<video>が現れたらresolve
   // ---------------------------------------------------------------------------
   function waitForVideoElement() {
     return new Promise(resolve => {
@@ -70,7 +68,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 3) Initialize after both clip data & video element are ready
+  // メイン処理の開始：URL・clipデータ・video要素の準備ができたら再生処理へ
   // ---------------------------------------------------------------------------
   async function init() {
     // URLにclip=1が付いていなければ追加してリロード
@@ -87,7 +85,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 4) Set up listeners and monitor for endtime only
+  // videoの再生が始まったら、endtimeまで監視し、到達したら停止・リロード
   // ---------------------------------------------------------------------------
   function setupPlayer() {
     const end = Number(clipData.endtime);
@@ -103,14 +101,14 @@
         startCountdownLogger(end);
       });
     }
-
+    // エラー発生時のログ出力
     videoPlayer.addEventListener('error', e => {
       console.error('[Video] error:', e);
     });
   }
 
   // ---------------------------------------------------------------------------
-  // 5) Stop when reaching the end
+  // 終了時間を監視し、達したらvideoを停止・イベント解除・リロード
   // ---------------------------------------------------------------------------
   function monitorClipEnd(end) {
     function onTimeUpdate() {
@@ -120,14 +118,25 @@
         videoPlayer.removeEventListener('timeupdate', onTimeUpdate);
 
         clearInterval(countdownIntervalId);
-        window.location.reload();
+        //ifで場合分けするbool値で管理
+        // クリップモード終了
+        /*
+        chrome.storage.local.set({ playClipSystemKey: 0 }, () => {
+          // 設定が完了した後に、監視を開始
+          waitUntilStorageBoolIsTrue("playClipSystemKey", () => {
+            window.location.href = "http://localhost:3000/site_data/my_video"; //遷移先URL
+          });
+        });
+        */
+        //再度再生（一次コメントアウト）
+        //window.location.reload();
       }
     }
     videoPlayer.addEventListener('timeupdate', onTimeUpdate);
   }
 
   // ---------------------------------------------------------------------------
-  // 6) Log remaining time until end every second
+  //毎秒、残り時間をログ出力する（開発・デバッグ用）
   // ---------------------------------------------------------------------------
   function startCountdownLogger(end) {
     if (countdownIntervalId !== null) clearInterval(countdownIntervalId);
@@ -140,7 +149,11 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Kick things off when the page finishes loading
+  // 
+  // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // ページの読み込みが完了したらinit()を実行
   // ---------------------------------------------------------------------------
   window.addEventListener('load', init);
 
