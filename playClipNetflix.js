@@ -6,6 +6,10 @@
   // ---------------------------------------------------------------------------
   let videoPlayer = null;   // <video> element reference
   let clipData    = null;   // { starttime, endtime, name, title, username }
+  let isScriptReloading = false;// スクリプトによるリロードフラグ
+
+  //デバッグ用変数定義
+  let togglekey = 0; // トグルキーの状態を管理する変数
 
   // End-time detection tolerance (seconds)
   const EPSILON = 0.05;
@@ -14,6 +18,7 @@
   // ---------------------------------------------------------------------------
   // URLに "clip=1" が含まれていない場合は追加し、ページをリロード
   // 理由：SPAのURL状態管理用フラグとして使用するため
+  // clipDataの判断を行う　別関数化を検討中
   // ---------------------------------------------------------------------------
   function ensureClipTagInURL() {
     if (!window.location.search.includes('clip=1')) {
@@ -21,6 +26,11 @@
       url.searchParams.set('clip', '1');
       window.location.href = url.toString();
     }
+    //clipdataの有無を取得
+    chrome.storage.local.get(["playClipSystemKey"], (result) => {
+    console.log("再生機能の起動キー:", result.playClipSystemKey);
+    });
+
   }
 
   // ---------------------------------------------------------------------------
@@ -39,8 +49,7 @@
           console.info('[Clip] loaded:', clipData);
           resolve(); // 読み込み成功
         } else {
-          chrome.storage.local.set({ playClipSystemKey: 0 });
-          reject(new Error('[Clip] No clip data or playClipSystemKey !== 1'));
+          console.log('[Clip] No clip data or playClipSystemKey is not 1');
         }
       });
     });
@@ -120,21 +129,22 @@
         clearInterval(countdownIntervalId);
         //ifで場合分けするbool値で管理
         // クリップモード終了
-        /*
-        chrome.storage.local.set({ playClipSystemKey: 0 }, () => {
-          // 設定が完了した後に、監視を開始
-          waitUntilStorageBoolIsTrue("playClipSystemKey", () => {
+        if (togglekey === 1 ){
+          // クリップモード終了
+          console.log("クリップモード終了");
+          // ストレージのplayClipSystemKeyを0に設定
+          chrome.storage.local.set({ playClipSystemKey: 0 }, () => {
+            console.log("playClipSystemKeyを0に設定しました。");
             window.location.href = "http://localhost:3000/site_data/my_video"; //遷移先URL
           });
-        });
-        */
-        //再度再生（一次コメントアウト）
-        //window.location.reload();
+        }else {
+          console.log("クリップ再度再生");
+          reloadPageFromScript ();
+        }
       }
     }
     videoPlayer.addEventListener('timeupdate', onTimeUpdate);
   }
-
   // ---------------------------------------------------------------------------
   //毎秒、残り時間をログ出力する（開発・デバッグ用）
   // ---------------------------------------------------------------------------
@@ -151,7 +161,7 @@
   // ---------------------------------------------------------------------------
   // Netflix apiを使用　（規約上　おそらくアウト）　後で消せ　機能不全
   // ---------------------------------------------------------------------------
-　function getNetflixApi(time) {
+  function getNetflixApi(time) {
   // 非公式：playerオブジェクト取得とseek（規約NG）
   const player = netflix.appContext.state.playerApp.getAPIPlayerBySessionId(0);
   if (!player) {
@@ -163,14 +173,69 @@
   player.play();     // 再生
   }
   // ---------------------------------------------------------------------------
-  // toggle.jsのトグルボタンを作成する部分
+  // トグルボタンの作成
   // ----------------------------------------------------------------------------
-  const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('toggle.js');
-  script.onload = () => {
-    window.setupToggleLogger();
-  };
-  document.head.appendChild(script);
+  // トグルボタン生成＆切替処理
+  function setupToggleLogger(onToggleOn, onToggleOff) {
+    let isToggleOn = false;
+
+    if (document.getElementById('toggleButton')) return;
+
+    const button = document.createElement('button');
+    button.id = 'toggleButton';
+    button.textContent = 'トグル OFF';
+    button.style.position = 'fixed';
+    button.style.bottom = '20px';
+    button.style.right = '20px';
+    button.style.padding = '10px 20px';
+    button.style.fontSize = '16px';
+    button.style.zIndex = '9999';
+    document.body.appendChild(button);
+
+    button.addEventListener('click', () => {
+      isToggleOn = !isToggleOn;
+      button.textContent = isToggleOn ? 'トグル ON' : 'トグル OFF';
+
+      if (isToggleOn && typeof onToggleOn === 'function') {
+        onToggleOn();
+      } else if (!isToggleOn && typeof onToggleOff === 'function') {
+        onToggleOff();
+      }
+    });
+  }
+
+  // 実行する関数（巻数）
+  function onToggle() {
+    console.log("▶ トグル ON: 巻数1 起動");
+    // 任意の処理をここに書く
+  }
+
+  function offToggle() {
+    console.log("■ トグル OFF: 巻数2 起動");
+    // 任意の処理をここに書く
+  }
+
+  //リロードイベントのスクリプト
+  function reloadPageFromScript() {
+    isScriptReloading = true;
+    location.reload();
+  }
+  window.addEventListener('beforeunload', (event) => {
+  if (!isScriptReloading) {
+    console.log('ユーザー操作など、スクリプト以外による再読み込みまたはページ遷移');
+    // ここでスクリプト以外による再読み込み時の処理を行う
+    chrome.storage.local.set({ playClipSystemKey: 0 }, () => {
+      console.log("playClipSystemKeyを0に設定しました。");
+    });
+  } else {
+    console.log('スクリプトによる再読み込み');
+    // スクリプトによる再読み込み後の処理が必要な場合は、
+    // localStorage や sessionStorage にフラグを保存し、
+    // load イベントなどで確認する方法を検討してください。
+    isScriptReloading = false; // フラグをリセット
+  }
+  });
+
   // ---------------------------------------------------------------------------
   // ページの読み込みが完了したらinit()を実行
   // ---------------------------------------------------------------------------
