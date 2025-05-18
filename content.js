@@ -1,203 +1,255 @@
-(() => {
-  /* ==========================  定数  =========================== */
-  const SVG_NS           = 'http://www.w3.org/2000/svg';
-  const BTN_ID           = 'nr-record-btn';
-  const COLOR_DEFAULT    = '#FFFFFF';
-  const COLOR_RECORDING  = '#FF0000';
-  const SELECTOR = {
-    video          : 'video',
-    titleContainer : '[data-uia="video-title"]',
-    controls       : '[data-uia="controls-standard"]',
-    volBtn         : '[data-uia="control-volume-high"]',
-    fwd10Btn       : '[data-uia="control-forward10"]', // “再生UIが出た?” 判断用
+(function() {
+  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+  const BUTTON_ID = 'record-button';
+  const COLOR_DEFAULT = "#FFFFFF";
+  const COLOR_RECORDING = "#FF0000";
+  const SELECTORS = {
+    videoPlayer: 'video',
+    videoTitle: '[data-uia="video-title"]',
+    controlsStandard: '[data-uia="controls-standard"]',
+    controlVolumeHigh: '[data-uia="control-volume-high"]',
+    controlForward10: '[data-uia="control-forward10"]',
   };
 
-  /* ======================  ユーティリティ  ===================== */
-  const qs  = (sel, root = document) => root.querySelector(sel);
-  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  window.addEventListener('load', () => {
+    // インジェクションスクリプトの注入
+    injectScript('history_change.js');
 
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+    // 要素の作成
+    const buttonMargin = createButtonMargin();
+    const wrapButton = document.createElement('div');
+    const recordButton = createRecordButton();
+    const svgElement = createSVG();
 
-  /* ========================  クラス本体  ======================= */
-  class NetflixRecorder {
-    /* ----- 状態 ----- */
-    #isRec     = false;
-    #startTime = 0;
-    #svg       = null;
-    #btn       = null;
-    #margin    = null;
-    #observer  = null;
+    // 状態管理変数
+    let isRecording = false;
+    let startTime;
+    let endTime;
+    let currentPath;
 
-    /* ----- 初期化 ----- */
-    async init() {
-      this.#injectHistoryHook();                   // SPA遷移検知
-      this.#createDom();                           // ボタン等を生成
-      this.#appendOnUiReady();                     // 初回 UI 挿入
-      this.#setupMutationObserver();               // UI が非同期生成される対策
-      window.addEventListener('beforeunload', () => this.#observer.disconnect());
-    }
+    // イベントリスナーの設定
+    recordButton.addEventListener('click', handleRecordButtonClick);
 
-    /* ----- DOM生成 ----- */
-    #createDom() {
-      // マージン
-      this.#margin = document.createElement('div');
-      Object.assign(this.#margin.style, { minWidth: '3rem', width: '3rem' });
+    // MutationObserverの設定
+    const observer = new MutationObserver(mutationCallback);
+    observer.observe(document.body, { childList: true, subtree: true });
 
-      // ボタン
-      this.#btn = document.createElement('button');
-      this.#btn.id = BTN_ID;
-      this.#btn.ariaLabel = '録画ボタン';
-      this.#btn.addEventListener('click', () => this.#toggleRecord());
+    // ページを離れたときにオブザーバーを停止
+    window.addEventListener('beforeunload', () => {
+      observer.disconnect();
+    });
 
-      // SVG アイコン
-      this.#svg = this.#buildSvg();
-      this.#btn.appendChild(this.#svg);
-    }
+    window.addEventListener('historyChange', function(e) {
+      const detail = e.detail;
+      console.log('History changed:', detail);
+      init();
 
-    #buildSvg() {
-      const svg = document.createElementNS(SVG_NS, 'svg');
-      svg.setAttribute('viewBox', '0 0 24 24');
-      svg.setAttribute('width',  '120%');
-      svg.setAttribute('height', '120%');
-      svg.style.color = COLOR_DEFAULT;
-
-      const style = document.createElementNS(SVG_NS, 'style');
-      style.textContent = '.s{fill:none;stroke:currentColor;stroke-miterlimit:10;}';
-      svg.append(style);
-
-      const elems = [
-        ['rect'   , { class: 's', x: 1.5,  y: 9.14, width: 15.27, height: 12.41 }],
-        ['polygon', { class: 's', points: '16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73'}],
-        ['circle' , { class: 's', cx: 4.84 , cy: 5.8 , r: 3.34 }],
-        ['circle' , { class: 's', cx: 13.43, cy: 5.8 , r: 3.34 }],
-        ['polygon', { class: 's', points: '7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77'}],
-      ];
-      elems.forEach(([tag, attrs]) => {
-        const el = document.createElementNS(SVG_NS, tag);
-        Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
-        svg.appendChild(el);
+      // 必要に応じてバックグラウンドスクリプトにメッセージを送信
+      chrome.runtime.sendMessage({
+        type: 'HISTORY_CHANGE',
+        data: detail
       });
+    });
+
+    // 関数定義
+
+    function injectScript(file, tag) {
+      const script = document.createElement('script');
+      script.src = chrome.runtime.getURL(file);
+      script.onload = function() {
+        this.remove();
+      };
+      (tag || document.head).appendChild(script);
+    }
+
+    function createButtonMargin() {
+      const margin = document.createElement('div');
+      margin.style.minWidth = '3rem';
+      margin.style.width = '3rem';
+      return margin;
+    }
+
+    function createRecordButton() {
+      const button = document.createElement('button');
+      button.id = BUTTON_ID;
+      button.setAttribute('aria-label', '録画ボタン');
+      return button;
+    }
+
+    function createSVG() {
+      const svg = createSVGElement("svg", {
+        id: "Layer_1",
+        "data-name": "Layer 1",
+        xmlns: SVG_NAMESPACE,
+        viewBox: "0 0 24 24",
+        "stroke-width": "1.5",
+        width: "120%",
+        height: "120%",
+        color: COLOR_DEFAULT
+      });
+
+      const style = createSVGElement("style", {});
+      style.textContent = ".cls-637630c1c3a86d32eae6f029-1{fill:none;stroke:currentColor;stroke-miterlimit:10;}";
+      svg.appendChild(style);
+
+      // SVG要素の追加
+      svg.appendChild(createSVGElement("rect", {
+        class: "cls-637630c1c3a86d32eae6f029-1",
+        x: "1.5",
+        y: "9.14",
+        width: "15.27",
+        height: "12.41"
+      }));
+      
+      svg.appendChild(createSVGElement("polygon", {
+        class: "cls-637630c1c3a86d32eae6f029-1",
+        points: "16.77 17.73 21.55 21.55 22.5 21.55 22.5 9.14 21.55 9.14 16.77 12.96 16.77 17.73"
+      }));
+
+      svg.appendChild(createSVGElement("circle", {
+        class: "cls-637630c1c3a86d32eae6f029-1",
+        cx: "4.84",
+        cy: "5.8",
+        r: "3.34"
+      }));
+
+      svg.appendChild(createSVGElement("circle", {
+        class: "cls-637630c1c3a86d32eae6f029-1",
+        cx: "13.43",
+        cy: "5.8",
+        r: "3.34"
+      }));
+
+      svg.appendChild(createSVGElement("polygon", {
+        class: "cls-637630c1c3a86d32eae6f029-1",
+        points: "7.23 16.77 7.23 13.91 10.09 15.34 7.23 16.77"
+      }));
+
       return svg;
     }
 
-    /* ----- UI にボタンを差し込む ----- */
-    #appendOnUiReady() {
-      const controls = qs(SELECTOR.controls);
-      const volBtn   = qs(SELECTOR.volBtn);
-      if (!controls || !volBtn) return;
-
-      // Netflix の既存クラスを流用して違和感ない見た目に
-      this.#btn.className    = volBtn.className;              // 大きさ・余白
-      this.#margin.className = volBtn.parentNode.className;   // ボタン周囲のラッパと同格
-      volBtn.parentNode.after(this.#margin);
-      volBtn.parentNode.after(this.#btn);
+    function createSVGElement(type, attributes) {
+      const elem = document.createElementNS(SVG_NAMESPACE, type);
+      for (const [key, value] of Object.entries(attributes)) {
+        elem.setAttribute(key, value);
+      }
+      return elem;
     }
 
-    /* ----- MutationObserver で UI 出現を監視 ----- */
-    #setupMutationObserver() {
-      this.#observer = new MutationObserver(() => {
-        // “10秒送り” ボタンが有無の瞬間に合わせて追従
-        if (qs(SELECTOR.fwd10Btn) && !qs(`#${BTN_ID}`)) {
-          this.#appendOnUiReady();
-        } else if (!qs(SELECTOR.fwd10Btn) && qs(`#${BTN_ID}`)) {
-          this.#btn.remove();
-          this.#margin.remove();
+    function handleRecordButtonClick() {
+      try { // 関数内でエラーハンドリング
+        const videoPlayer = document.querySelector(SELECTORS.videoPlayer);
+        const allTitleName = document.querySelector(SELECTORS.videoTitle);
+
+        if (!videoPlayer) {
+          throw new Error('ビデオプレーヤーが見つかりません。');
         }
-      });
-      this.#observer.observe(document.body, { childList: true, subtree: true });
-    }
 
-    /* ----- 録画トグル ----- */
-    #toggleRecord() {
-      const video = qs(SELECTOR.video);
-      if (!video) { return alert('ビデオ要素が見つかりません'); }
+        if (isRecording) {
+          endTime = videoPlayer.currentTime;
+          currentPath = window.location.pathname;
+          if(startTime > endTime){
+            throw new Error("録画終了時刻が開始時刻よりも早い値です");
+          }
+          const checkSecond = Math.abs(endTime - startTime);
+          if(checkSecond < 1){
+            svgElement.setAttribute("color", COLOR_RECORDING);
+            throw new Error("録画範囲が短すぎます");
+          }
 
-      if (!this.#isRec) {                // ---- 録画開始 ----
-        this.#isRec     = true;
-        this.#startTime = video.currentTime;
-        this.#svg.style.color = COLOR_RECORDING;
-        return;
-      }
-
-      /* ---- 録画終了 ---- */
-      const end = video.currentTime;
-      const span = end - this.#startTime;
-
-      try {
-        if (span < 1)  throw new Error('録画範囲が 1秒 未満です');
-        if (span < 0)  throw new Error('終了時刻が開始時刻より前です');
-        const payload = this.#buildPayload(this.#startTime, end);
-        this.#post(payload);
-      } catch (err) {
-        console.error(err);
-        alert(err.message);
-      } finally {
-        this.#resetState();
-      }
-    }
-
-    /* ----- 送信データを組み立て ----- */
-    #buildPayload(start, end) {
-      const titleBox = qs(SELECTOR.titleContainer);
-      if (!titleBox) throw new Error('タイトル要素が取得できません');
-
-      /** @type {{title:string, ep?:string}} */
-      const titleInfo = (() => {
-        const h4 = qs('h4', titleBox);
-        if (h4) {   // シリーズ作品
-          return {
-            title : h4.textContent.trim(),
-            ep    : qs('span:nth-of-type(1)', titleBox)?.textContent.trim() || ''
+          const data = {
+            StartTime: startTime,
+            EndTime: endTime,
+            URL: currentPath,
           };
+
+          if (allTitleName) {
+            const h4Element = allTitleName.querySelector('h4');
+            if (h4Element) {
+              // シリーズ作品の場合
+              data.title = h4Element.textContent;
+              const episodeNumberElement = allTitleName.querySelector('span:nth-of-type(1)');
+              if (episodeNumberElement) {
+                data.epnumber = episodeNumberElement.textContent;
+              }
+            } else {
+              // シリーズ作品ではない場合
+              data.title = allTitleName.textContent;
+            }
+          } else {
+            throw new Error('タイトル要素が見つかりません。');
+          }
+
+          sendData(data);
+          init();
+        } else {
+          svgElement.setAttribute("color", COLOR_RECORDING);
+          isRecording = true;
+          startTime = videoPlayer.currentTime;
         }
-        return { title: titleBox.textContent.trim() };
-      })();
-
-      return {
-        ...titleInfo,
-        startTime : start,
-        endTime   : end,
-        url       : location.pathname,
-        recordedAt: new Date().toISOString(),
-      };
-    }
-
-    /* ----- サーバーへ送信 ----- */
-    async #post(data) {
-      try {
-        const res = await fetch(window.url, {
-          method : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body   : JSON.stringify(data),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        console.log('[NetflixRecorder] Upload success');
-      } catch (e) {
-        console.error('[NetflixRecorder] Upload failed', e);
-        alert('データ送信に失敗しました');
+      } catch (error) {
+        console.error(error);
+        // ユーザーにエラーを通知するUIをここに追加可能
+        alert(error.message); // 例: アラートで通知
+        init();
       }
     }
 
-    /* ----- 状態リセット ----- */
-    #resetState() {
-      this.#isRec = false;
-      this.#svg.style.color = COLOR_DEFAULT;
+    function addElements() {
+      const controlsStandardElement = document.querySelector(SELECTORS.controlsStandard);
+      if (controlsStandardElement) {
+        const controlVolumeElement = document.querySelector(SELECTORS.controlVolumeHigh);
+        if (controlVolumeElement) {
+          recordButton.className = controlVolumeElement.className;
+          recordButton.appendChild(svgElement);
+          wrapButton.className = controlVolumeElement.parentNode.className;
+          controlVolumeElement.parentNode.after(wrapButton);
+          wrapButton.appendChild(recordButton);
+          controlVolumeElement.parentNode.after(buttonMargin);
+        }
+      }
     }
 
-    /* ----- SPA履歴遷移フック (history_change.js)----- */
-    #injectHistoryHook() {
-      const script = document.createElement('script');
-      script.src   = chrome.runtime.getURL('history_change.js');
-      script.onload = () => script.remove();
-      document.head.append(script);
+    function mutationCallback(mutationsList) {
 
-      window.addEventListener('historyChange', e => {
-        this.#resetState();
-        chrome.runtime.sendMessage({ type: 'HISTORY_CHANGE', data: e.detail });
-      });
+      const controlsForward10Element = document.querySelector(SELECTORS.controlForward10);
+      if (controlsForward10Element && !document.getElementById(BUTTON_ID)) {
+        addElements();
+      } else if (!controlsForward10Element && document.getElementById(BUTTON_ID)) {
+        buttonMargin.remove();
+        recordButton.remove();
+      }
     }
+
+    function init() { // 必要なリセット処理があればここに追加
+      isRecording = false;
+      startTime = null;
+      endTime = null;
+      svgElement.setAttribute("color", COLOR_DEFAULT);
+    }
+  });
+
+
+  /**
+   * データをサーバーに送信する関数
+   * @param {Object} dataToSend - 送信するデータ
+   */
+  function sendData(dataToSend) {
+    fetch(window.url, { // window.urlは別ファイルに定義済み
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dataToSend),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Success:', data);
+      // ユーザーに成功を通知するUIを追加可能
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      // ユーザーにエラーを通知するUIを追加可能
+    });
   }
-
-  /* ========================  起動 ======================== */
-  document.addEventListener('DOMContentLoaded', () => new NetflixRecorder().init());
 })();
