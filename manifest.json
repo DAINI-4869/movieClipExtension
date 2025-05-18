@@ -1,38 +1,34 @@
 {
   "manifest_version": 3,
-  "name": "netflix movie clipper",
+  "name": "Netflix Movie Clipper",
   "version": "1.0.0",
-  "description": "movie clipping 001",
+  "description": "Movie clipping 001",
+
   "permissions": [
     "activeTab",
     "storage",
     "tabs"
   ],
+
   "host_permissions": [
     "http://localhost:3000/*"
   ],
+
   "background": {
     "service_worker": "background.js"
   },
+
   "content_scripts": [
     {
       "matches": ["https://www.netflix.com/*"],
       "run_at": "document_end",
-      "js": [
-        "inject_script.js"
-      ]
+      "js": ["inject_script.js"]
     },
     {
       "matches": ["https://www.netflix.com/*"],
       "run_at": "document_idle",
-      "css": [
-        "content_button.css"
-      ],
-      "js": [
-        "config.js",
-        "content.js",
-        "playClipNetflix.js"
-      ]
+      "css": ["content_button.css"],
+      "js": ["config.js", "content.js", "playClipNetflix.js"]
     },
     {
       "matches": [
@@ -40,9 +36,7 @@
         "https://www.amazon.co.jp/*"
       ],
       "run_at": "document_end",
-      "js": [
-        "inject_script.js"
-      ]
+      "js": ["inject_script.js"]
     },
     {
       "matches": [
@@ -50,28 +44,20 @@
         "https://www.amazon.co.jp/*"
       ],
       "run_at": "document_idle",
-      "css": [
-        "content_button.css"
-      ],
-      "js": [
-        "config.js",
-        "contentForAmazonPrime.js"
-      ]
+      "css": ["content_button.css"],
+      "js": ["config.js", "contentForAmazonPrime.js"]
     },
     {
       "matches": ["http://localhost:3000/*"],
       "run_at": "document_idle",
-      "js": [
-        "playClipContent.js"
-      ]
+      "js": ["playClipContent.js"]
     }
   ],
   "web_accessible_resources": [
     {
       "matches": ["https://www.netflix.com/*"],
-      "resources": [
-        "history_change.js"
-      ]
+      "resources": ["history_change.js"]
     }
   ]
 }
+
