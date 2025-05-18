@@ -172,49 +172,11 @@
   player.seek(time);  // timeへ
   player.play();     // 再生
   }
+
+
   // ---------------------------------------------------------------------------
-  // トグルボタンの作成
-  // ----------------------------------------------------------------------------
-  // トグルボタン生成＆切替処理
-  function setupToggleLogger(onToggleOn, onToggleOff) {
-    let isToggleOn = false;
-
-    if (document.getElementById('toggleButton')) return;
-
-    const button = document.createElement('button');
-    button.id = 'toggleButton';
-    button.textContent = 'トグル OFF';
-    button.style.position = 'fixed';
-    button.style.bottom = '20px';
-    button.style.right = '20px';
-    button.style.padding = '10px 20px';
-    button.style.fontSize = '16px';
-    button.style.zIndex = '9999';
-    document.body.appendChild(button);
-
-    button.addEventListener('click', () => {
-      isToggleOn = !isToggleOn;
-      button.textContent = isToggleOn ? 'トグル ON' : 'トグル OFF';
-
-      if (isToggleOn && typeof onToggleOn === 'function') {
-        onToggleOn();
-      } else if (!isToggleOn && typeof onToggleOff === 'function') {
-        onToggleOff();
-      }
-    });
-  }
-
-  // 実行する関数（巻数）
-  function onToggle() {
-    console.log("▶ トグル ON: 巻数1 起動");
-    // 任意の処理をここに書く
-  }
-
-  function offToggle() {
-    console.log("■ トグル OFF: 巻数2 起動");
-    // 任意の処理をここに書く
-  }
-
+  // リロード周りでのsystem終了処理
+  //-----------------------------------------------------------------------------
   //リロードイベントのスクリプト
   function reloadPageFromScript() {
     isScriptReloading = true;
@@ -235,7 +197,6 @@
     isScriptReloading = false; // フラグをリセット
   }
   });
-
   // ---------------------------------------------------------------------------
   // ページの読み込みが完了したらinit()を実行
   // ---------------------------------------------------------------------------
