@@ -28,7 +28,7 @@
       "matches": ["https://www.netflix.com/*"],
       "run_at": "document_idle",
       "css": ["content_button.css"],
-      "js": ["config.js", "content.js", "playClipNetflix.js"]
+      "js": ["config.js", "content.js", "playClipNetflix.js","replaybutton.js"]
     },
     {
       "matches": [
