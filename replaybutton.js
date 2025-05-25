@@ -3,7 +3,7 @@
   const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
   const BUTTON_ID = 'replay-button';
   const COLOR_DEFAULT = "#FFFFFF";
-  const COLOR_RECORDING = "#FF0000";
+  const COLOR_ROOPING = "#FF0000";
   const SELECTORS = {
     videoPlayer: 'video',
     videoTitle: '[data-uia="video-title"]',
@@ -83,7 +83,6 @@
         "stroke-width": "1.5",
         width: "120%",
         height: "120%",
-        color: COLOR_DEFAULT
       });
 
       const style = createSVGElement("style", {});
@@ -149,11 +148,11 @@
         if (isRooping) {
             console.log('繰り返しを開始します。');
             isRooping = true;
-            svgElement.setAttribute("color", COLOR_RECORDING);
-            init();
+            svgElement.setAttribute("color", COLOR_ROOPING);
         } else {
-            svgElement.setAttribute("color", COLOR_RECORDING);
-            isRooping = true;
+            console.log('繰り返しを停止します。');
+            svgElement.setAttribute("color", COLOR_DEFAULT);
+            isRooping = false;
         }
       } catch (error) {
         console.error(error);
@@ -174,6 +173,7 @@ function addElements() {
 
       // 右マージンを追加
       wrapButton.style.marginRight = '12px';
+      wrapButton.style.marginLeft = '12px';
 
       // SVG追加
       recordButton.appendChild(svgElement);
