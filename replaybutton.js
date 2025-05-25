@@ -3,7 +3,7 @@
   const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
   const BUTTON_ID = 'replay-button';
   const COLOR_DEFAULT = "#FFFFFF";
-  const COLOR_ROOPING = "#FF0000";
+  const COLOR_LOOPING = "#FF0000";
   const SELECTORS = {
     videoPlayer: 'video',
     videoTitle: '[data-uia="video-title"]',
@@ -23,7 +23,7 @@
     const svgElement = createSVG();
 
     // 状態管理変数
-    let isRooping = false;
+    let isLooping = false;
 
     // イベントリスナーの設定
     recordButton.addEventListener('click', handleRecordButtonClick);
@@ -145,14 +145,14 @@
           throw new Error('ビデオプレーヤーが見つかりません。');
         }
 
-        if (isRooping) {
+        if (isLooping) {
             console.log('繰り返しを開始します。');
-            isRooping = true;
-            svgElement.setAttribute("color", COLOR_ROOPING);
+            isLooping = false;
+            svgElement.setAttribute("color", COLOR_LOOPING);
         } else {
             console.log('繰り返しを停止します。');
+            isLooping = true;
             svgElement.setAttribute("color", COLOR_DEFAULT);
-            isRooping = false;
         }
       } catch (error) {
         console.error(error);
@@ -199,7 +199,7 @@ function addElements() {
     }
 
     function init() { // 必要なリセット処理があればここに追加
-      isRooping = false;
+      isLooping = false;
       startTime = null;
       endTime = null;
       svgElement.setAttribute("color", COLOR_DEFAULT);
