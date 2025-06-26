@@ -6,57 +6,45 @@
 
   let isLooping = false;
   let svgElement;
+  const SELECTORS = {
+    controlsStandard: '[data-uia="controls-standard"]',
+    controlEpisodes: '[data-uia="control-episodes"]',
+    controlForward10: '[data-uia="control-forward10"]',
+  };
 
-  const SELECTOR_TARGET = '[data-uia="control-episodes"]';
+  const buttonMargin = createButtonMargin();
+  const wrapButton = document.createElement("div");
+  const loopButton = createLoopButton();
+  svgElement = createLoopSVG();
 
-  const observer = new MutationObserver(() => {
-    const episodesButton = document.querySelector(SELECTOR_TARGET);
-    if (episodesButton && !document.getElementById(BUTTON_ID)) {
-      addLoopButtonNextToEpisodes(episodesButton);
-    }
+  loopButton.addEventListener("click", handleLoopToggle);
+
+  const observer = new MutationObserver(mutationCallback);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  window.addEventListener("beforeunload", () => {
+    observer.disconnect();
   });
 
-  window.addEventListener("load", () => {
-    const controls = document.body;
-    if (controls) {
-      observer.observe(controls, { childList: true, subtree: true });
-    }
-  });
-
-  function addLoopButtonNextToEpisodes(episodesButton) {
-    const wrapButton = document.createElement("div");
-    wrapButton.style.marginLeft = "12px";
-    wrapButton.style.display = "inline-block";
-
-    const loopButton = document.createElement("button");
-    loopButton.id = BUTTON_ID;
-    loopButton.setAttribute("aria-label", "ループボタン");
-    loopButton.style.width = "24px";
-    loopButton.style.height = "24px";
-    loopButton.style.background = "transparent";
-    loopButton.style.border = "none";
-    loopButton.style.cursor = "pointer";
-
-    svgElement = createLoopSVG();
-    loopButton.appendChild(svgElement);
-    wrapButton.appendChild(loopButton);
-
-    loopButton.addEventListener("click", handleLoopToggle);
-
-    episodesButton.parentNode.insertAdjacentElement("afterend", wrapButton);
+  function createButtonMargin() {
+    const margin = document.createElement("div");
+    margin.style.minWidth = "3rem";
+    margin.style.width = "3rem";
+    return margin;
   }
 
-  function handleLoopToggle() {
-    isLooping = !isLooping;
-    svgElement.style.color = isLooping ? COLOR_LOOPING : COLOR_DEFAULT;
-    console.log(isLooping ? "ループON" : "ループOFF");
+  function createLoopButton() {
+    const button = document.createElement("button");
+    button.id = BUTTON_ID;
+    button.setAttribute("aria-label", "ループボタン");
+    return button;
   }
 
   function createLoopSVG() {
     const svg = document.createElementNS(SVG_NAMESPACE, "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("width", "24");
-    svg.setAttribute("height", "24");
+    svg.setAttribute("width", "120%");
+    svg.setAttribute("height", "120%");
     svg.style.color = COLOR_DEFAULT;
 
     const style = document.createElementNS(SVG_NAMESPACE, "style");
@@ -87,5 +75,36 @@
     }
 
     return svg;
+  }
+
+  function handleLoopToggle() {
+    isLooping = !isLooping;
+    svgElement.style.color = isLooping ? COLOR_LOOPING : COLOR_DEFAULT;
+    console.log(isLooping ? "ループON" : "ループOFF");
+  }
+
+  function addElements() {
+    const controlsStandardElement = document.querySelector(SELECTORS.controlsStandard);
+    if (controlsStandardElement) {
+      const controlVolumeElement = document.querySelector(SELECTORS.controlEpisodes);
+      if (controlVolumeElement) {
+        loopButton.className = controlVolumeElement.className;
+        loopButton.appendChild(svgElement);
+        wrapButton.className = controlVolumeElement.parentNode.className;
+        controlVolumeElement.parentNode.after(wrapButton);
+        wrapButton.appendChild(loopButton);
+        controlVolumeElement.parentNode.after(buttonMargin);
+      }
+    }
+  }
+
+  function mutationCallback(mutationsList) {
+    const controlsForward10Element = document.querySelector(SELECTORS.controlForward10);
+    if (controlsForward10Element && !document.getElementById(BUTTON_ID)) {
+      addElements();
+    } else if (!controlsForward10Element && document.getElementById(BUTTON_ID)) {
+      buttonMargin.remove();
+      loopButton.remove();
+    }
   }
 })();
