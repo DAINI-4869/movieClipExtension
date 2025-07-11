@@ -15,20 +15,25 @@
   ],
 
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/background.js"
   },
 
   "content_scripts": [
     {
       "matches": ["https://www.netflix.com/*"],
       "run_at": "document_end",
-      "js": ["inject_script.js"]
+      "js": ["src/inject/inject_script.js"]
     },
     {
       "matches": ["https://www.netflix.com/*"],
       "run_at": "document_idle",
-      "css": ["content_button.css"],
-      "js": ["config.js", "content.js", "playClipNetflix.js","replaybutton.js"]
+      "css": ["src/css/content_button.css"],
+      "js": [
+        "src/config/config.js",
+        "src/content/content.js",
+        "src/content/playClipNetflix.js",
+        "src/content/replaybutton.js"
+      ]
     },
     {
       "matches": [
@@ -36,7 +41,7 @@
         "https://www.amazon.co.jp/*"
       ],
       "run_at": "document_end",
-      "js": ["inject_script.js"]
+      "js": ["src/inject/inject_script.js"]
     },
     {
       "matches": [
@@ -44,20 +49,23 @@
         "https://www.amazon.co.jp/*"
       ],
       "run_at": "document_idle",
-      "css": ["content_button.css"],
-      "js": ["config.js", "contentForAmazonPrime.js"]
+      "css": ["src/css/content_button.css"],
+      "js": [
+        "src/config/config.js",
+        "src/content/contentForAmazonPrime.js"
+      ]
     },
     {
       "matches": ["http://localhost:3000/*"],
       "run_at": "document_idle",
-      "js": ["playClipContent.js"]
+      "js": ["src/content/playClipContent.js"]
     }
   ],
+
   "web_accessible_resources": [
     {
       "matches": ["https://www.netflix.com/*"],
-      "resources": ["history_change.js"]
+      "resources": ["src/util/history_change.js"]
     }
   ]
 }
-
