@@ -25,7 +25,7 @@
     let isRecording = false;
     let startTime;
     let endTime;
-    let currentPath = window.location.pathname;
+    let currentPath;
 
     // イベントリスナーの設定
     recordButton.addEventListener('click', handleRecordButtonClick);
@@ -147,7 +147,7 @@
 
         if (isRecording) {
           endTime = videoPlayer.currentTime;
-
+          currentPath = window.location.pathname;
           if(startTime > endTime){
             throw new Error("録画終了時刻が開始時刻よりも早い値です");
           }
@@ -162,6 +162,9 @@
             EndTime: endTime,
             URL: currentPath,
           };
+          data.service = detectService();
+          data.user = "test_user";
+
 
           if (allTitleName) {
             const h4Element = allTitleName.querySelector('h4');
@@ -228,6 +231,20 @@
       svgElement.setAttribute("color", COLOR_DEFAULT);
     }
   });
+  /**
+   * 今いる動画サービスをホスト名から判定
+   * @returns {string} サービス名
+   */
+  function detectService() {
+    const host = window.location.hostname;
+    if (host.includes('netflix.com')) return 'Netflix';
+    if (host.includes('primevideo.com')) return 'Prime Video';
+    if (host.includes('youtube.com')) return 'YouTube';
+    if (host.includes('disneyplus.com')) return 'Disney+';
+    if (host.includes('hulu.jp') || host.includes('hulu.com')) return 'Hulu';
+    return 'Unknown';
+  }
+
 
   /**
    * データをサーバーに送信する関数

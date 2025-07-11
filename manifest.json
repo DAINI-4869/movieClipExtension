@@ -1,32 +1,51 @@
-{   
+{
   "manifest_version": 3,
-  "name": "netflix movie clipper",
+  "name": "Netflix Movie Clipper",
   "version": "1.0.0",
-  "description": "movie clipping",
+  "description": "Movie clipping 001",
+
   "permissions": [
-    "activeTab"
+    "activeTab",
+    "storage",
+    "tabs"
   ],
+
+  "host_permissions": [
+    "http://localhost:3000/*"
+  ],
+
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+
   "content_scripts": [
     {
       "matches": ["https://www.netflix.com/*"],
-      "js": ["inject_script.js"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "js": ["src/inject/inject_script.js"]
     },
     {
       "matches": ["https://www.netflix.com/*"],
-      "css": ["content_button.css"],
-      "js": ["content.js", "config.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "css": ["src/css/content_button.css"],
+      "js": [
+        "src/config/config.js",
+        "src/content/content.js",
+        "src/content/playClipNetflix.js",
+        "src/content/replaybutton_mergeToplayClipNetflix.js"
+      ]
+    },
+    {
+      "matches": ["http://localhost:3000/*"],
+      "run_at": "document_idle",
+      "js": ["src/content/getClipData.js"]
     }
-
   ],
+
   "web_accessible_resources": [
     {
       "matches": ["https://www.netflix.com/*"],
-      "resources": ["history_change.js"]
+      "resources": ["src/util/history_change.js"]
     }
-  ],
-  "background": {
-    "service_worker": "background.js"
-  }
+  ]
 }
