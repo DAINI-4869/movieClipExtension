@@ -32,33 +32,13 @@
         "src/config/config.js",
         "src/content/content.js",
         "src/content/playClipNetflix.js",
-        "src/content/replaybutton.js"
-      ]
-    },
-    {
-      "matches": [
-        "https://www.amazon.co.jp/gp/*",
-        "https://www.amazon.co.jp/*"
-      ],
-      "run_at": "document_end",
-      "js": ["src/inject/inject_script.js"]
-    },
-    {
-      "matches": [
-        "https://www.amazon.co.jp/gp/*",
-        "https://www.amazon.co.jp/*"
-      ],
-      "run_at": "document_idle",
-      "css": ["src/css/content_button.css"],
-      "js": [
-        "src/config/config.js",
-        "src/content/contentForAmazonPrime.js"
+        "src/content/replaybutton_mergeToplayClipNetflix.js"
       ]
     },
     {
       "matches": ["http://localhost:3000/*"],
       "run_at": "document_idle",
-      "js": ["src/content/playClipContent.js"]
+      "js": ["src/content/getClipData.js"]
     }
   ],
 
