@@ -1,110 +1,162 @@
 (function () {
-  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-  const BUTTON_ID = "loop-button";
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const BUTTON_ID = "nf-loop-toggle-btn";
+  const SIDEBAR_ID = "nf-memo-sidebar";
+  const SIDEBAR_PCT = 20;
   const COLOR_DEFAULT = "#FFFFFF";
   const COLOR_LOOPING = "#FF0000";
-
   let isLooping = false;
-  let svgElement;
-  const SELECTORS = {
-    controlsStandard: '[data-uia="controls-standard"]',
-    controlEpisodes: '[data-uia="control-episodes"]',
-    controlForward10: '[data-uia="control-forward10"]',
-  };
+  let timer = null;
 
-  const buttonMargin = createButtonMargin();
-  const wrapButton = document.createElement("div");
-  const loopButton = createLoopButton();
-  svgElement = createLoopSVG();
-
-  loopButton.addEventListener("click", handleLoopToggle);
-
-  const observer = new MutationObserver(mutationCallback);
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  window.addEventListener("beforeunload", () => {
-    observer.disconnect();
-  });
-
-  function createButtonMargin() {
-    const margin = document.createElement("div");
-    margin.style.minWidth = "3rem";
-    margin.style.width = "3rem";
-    return margin;
-  }
-
-  function createLoopButton() {
-    const button = document.createElement("button");
-    button.id = BUTTON_ID;
-    button.setAttribute("aria-label", "ループボタン");
-    return button;
-  }
-
-  function createLoopSVG() {
-    const svg = document.createElementNS(SVG_NAMESPACE, "svg");
+  // SVGアイコン
+  const svgIcon = (() => {
+    const svg = document.createElementNS(SVG_NS, "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
     svg.setAttribute("width", "120%");
     svg.setAttribute("height", "120%");
     svg.style.color = COLOR_DEFAULT;
-
-    const style = document.createElementNS(SVG_NAMESPACE, "style");
-    style.textContent = `
-      .loop-icon {
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.5;
-        stroke-miterlimit: 10;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
+    svg.style.transition = "color 0.2s ease";
+    svg.innerHTML = `
+      <style>
+        .loop-icon {
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 1.5;
+          stroke-miterlimit: 10;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+      </style>
+      <path d="M3.58 5.16H17.42c1.66 0 3 1.34 3 3v3.32"  class="loop-icon"/>
+      <path d="M6.74 2l-3.16 3.16L6.74 8.32"              class="loop-icon"/>
+      <path d="M20.42 18.84H6.58c-1.66 0-3-1.34-3-3v-3.32" class="loop-icon"/>
+      <path d="M17.26 22l3.16-3.16L17.26 15.68"            class="loop-icon"/>
     `;
-    svg.appendChild(style);
-
-    const paths = [
-      "M3.57996 5.15991H17.42C19.08 5.15991 20.42 6.49991 20.42 8.15991V11.4799",
-      "M6.73996 2L3.57996 5.15997L6.73996 8.32001",
-      "M20.42 18.84H6.57996C4.91996 18.84 3.57996 17.5 3.57996 15.84V12.52",
-      "M17.26 21.9999L20.42 18.84L17.26 15.6799"
-    ];
-
-    for (const d of paths) {
-      const path = document.createElementNS(SVG_NAMESPACE, "path");
-      path.setAttribute("d", d);
-      path.setAttribute("class", "loop-icon");
-      svg.appendChild(path);
-    }
-
     return svg;
-  }
+  })();
 
-  function handleLoopToggle() {
-    isLooping = !isLooping;
-    svgElement.style.color = isLooping ? COLOR_LOOPING : COLOR_DEFAULT;
-    console.log(isLooping ? "ループON" : "ループOFF");
-  }
+  // ループボタン
+  const loopButton = (() => {
+    const btn = document.createElement("button");
+    btn.id = BUTTON_ID;
+    btn.setAttribute("aria-label", "メモサイドバー開閉");
+    btn.appendChild(svgIcon);
+    btn.style.cursor = "pointer";
+    btn.addEventListener("click", () => {
+      isLooping = !isLooping;
+      svgIcon.style.color = isLooping ? COLOR_LOOPING : COLOR_DEFAULT;
+      toggleSidebar();
+    });
+    return btn;
+  })();
 
-  function addElements() {
-    const controlsStandardElement = document.querySelector(SELECTORS.controlsStandard);
-    if (controlsStandardElement) {
-      const controlVolumeElement = document.querySelector(SELECTORS.controlEpisodes);
-      if (controlVolumeElement) {
-        loopButton.className = controlVolumeElement.className;
-        loopButton.appendChild(svgElement);
-        wrapButton.className = controlVolumeElement.parentNode.className;
-        controlVolumeElement.parentNode.after(wrapButton);
-        wrapButton.appendChild(loopButton);
-        controlVolumeElement.parentNode.after(buttonMargin);
-      }
+  // Netflix UI に挿入
+  const SELECTOR_STANDARD = '[data-uia="controls-standard"]';
+  const SELECTOR_EPISODE = '[data-uia="control-episodes"]';
+  const SELECTOR_FWD10 = '[data-uia="control-forward10"]';
+
+  const uiObserver = new MutationObserver(() => {
+    const controls = document.querySelector(SELECTOR_STANDARD);
+    const episodeBtn = document.querySelector(SELECTOR_EPISODE);
+    if (controls && episodeBtn && !document.getElementById(BUTTON_ID)) {
+      loopButton.className = episodeBtn.className;
+      const wrapper = document.createElement("div");
+      wrapper.className = episodeBtn.parentNode.className;
+      episodeBtn.parentNode.after(wrapper);
+      wrapper.appendChild(loopButton);
+
+      const spacer = document.createElement("div");
+      spacer.style.minWidth = "3rem";
+      episodeBtn.parentNode.after(spacer);
     }
-  }
-
-  function mutationCallback(mutationsList) {
-    const controlsForward10Element = document.querySelector(SELECTORS.controlForward10);
-    if (controlsForward10Element && !document.getElementById(BUTTON_ID)) {
-      addElements();
-    } else if (!controlsForward10Element && document.getElementById(BUTTON_ID)) {
-      buttonMargin.remove();
+    if (!document.querySelector(SELECTOR_FWD10) && document.getElementById(BUTTON_ID)) {
       loopButton.remove();
     }
+  });
+  uiObserver.observe(document.body, { childList: true, subtree: true });
+  window.addEventListener("beforeunload", () => uiObserver.disconnect());
+
+  // サイドバーのトグル
+  function toggleSidebar() {
+    const sb = document.getElementById(SIDEBAR_ID);
+    sb ? closeSidebar() : openSidebar();
+  }
+
+  function openSidebar() {
+    const player = document.querySelector(".watch-video--player-view");
+    if (!player) return;
+    player.style.transition = "width .3s";
+    player.style.width = `calc(100% - ${SIDEBAR_PCT}%)`;
+
+    const sb = document.createElement("div");
+    sb.id = SIDEBAR_ID;
+    sb.style.cssText = `
+      position:fixed;top:0;right:0;width:${SIDEBAR_PCT}%;
+      height:100%;background:rgba(0,0,0,.9);color:white;
+      padding:10px;box-sizing:border-box;z-index:9999;
+      display:flex;flex-direction:column;gap:10px;overflow-y:auto;
+      font-size:12px;`;
+
+    const header = document.createElement("div");
+    header.style.cssText = "display:flex;justify-content:space-between;align-items:center;";
+    const title = document.createElement("strong");
+    title.textContent = "記録一覧";
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "×";
+    closeBtn.style.cssText = "background:red;color:#fff;border:none;cursor:pointer;font-size:14px;";
+    closeBtn.onclick = toggleSidebar;
+    header.append(title, closeBtn);
+    sb.appendChild(header);
+
+    const listContainer = document.createElement("div");
+    listContainer.id = "nf-api-list";
+    listContainer.textContent = "読込中…";
+    sb.appendChild(listContainer);
+
+    document.body.appendChild(sb);
+
+    fetchDataAndRender(listContainer);
+  }
+
+  function closeSidebar() {
+    const player = document.querySelector(".watch-video--player-view");
+    if (player) player.style.width = "100%";
+    document.getElementById(SIDEBAR_ID)?.remove();
+    clearInterval(timer);
+  }
+
+  // API 取得 → 表示
+  async function fetchDataAndRender(container) {
+    try {
+      const res = await fetch(window.getUrl);
+      const data = await res.json();
+      const items = data.allReceivedData || [];
+
+      if (!items.length) {
+        container.textContent = "データがありません。";
+        return;
+      }
+
+      container.innerHTML = "";
+      for (const item of items) {
+        const entry = document.createElement("div");
+        entry.style.cssText = "border-bottom:1px solid #555;padding:4px 0;";
+        entry.innerHTML = `
+          <div><strong>${item.title}（${item.epnumber}）</strong></div>
+          <div>ユーザー: ${item.user}</div>
+          <div>範囲: ${formatTime(item.startTime)} - ${formatTime(item.endTime)}</div>
+        `;
+        container.appendChild(entry);
+      }
+    } catch (err) {
+      container.textContent = "データの取得に失敗しました。";
+      console.error("API取得失敗:", err);
+    }
+  }
+
+  function formatTime(sec) {
+    const s = Math.floor(sec % 60).toString().padStart(2, "0");
+    const m = Math.floor(sec / 60);
+    return `${m}:${s}`;
   }
 })();
