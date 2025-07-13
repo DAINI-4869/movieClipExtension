@@ -1,8 +1,6 @@
 (function() {
   const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
   const BUTTON_ID = 'record-button';
-  const COLOR_DEFAULT = "#FFFFFF";
-  const COLOR_RECORDING = "#FF0000";
   const SELECTORS = {
     videoPlayer: 'video',
     videoTitle: '[data-uia="video-title"]',
