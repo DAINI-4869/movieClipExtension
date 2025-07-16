@@ -1,6 +1,7 @@
 (function() {
   const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
   const BUTTON_ID = 'record-button';
+
   const SELECTORS = {
     videoPlayer: 'video',
     videoTitle: '[data-uia="video-title"]',
@@ -73,8 +74,6 @@
       button.setAttribute('aria-label', '録画ボタン');
       return button;
     }
-
-
     function createSVGElement(type, attributes) {
       const elem = document.createElementNS(SVG_NAMESPACE, type);
       for (const [key, value] of Object.entries(attributes)) {
