@@ -1,4 +1,10 @@
-import { API_URL, getApiEndpoint } from './../utils.js';
+import "../css/content_button.css";
+import "../image/moreDetailSVG.js";
+import "../image/recordSVG.js";
+import "../config/config.js";
+import "./playClipNetflix.js";
+import "./replaybutton_mergeToplayClipNetflix.js";
+import { getApiEndpoint } from './../utils.js';
 
 (function() {
   const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
