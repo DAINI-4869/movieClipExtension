@@ -1,39 +1,14 @@
 (function () {
-  const SVG_NS = "http://www.w3.org/2000/svg";
   const BUTTON_ID = "nf-loop-toggle-btn";
   const SIDEBAR_ID = "nf-memo-sidebar";
   const SIDEBAR_PCT = 20;
-  const COLOR_DEFAULT = "#FFFFFF";
-  const COLOR_LOOPING = "#FF0000";
+  const COLOR_DEFAULT = window.COLOR_DETAIL_DEFAULT || "#FFFFFF";
+  const COLOR_LOOPING = window.COLOR_DETAIL_ACTIVE || "#FF0000";
   let isLooping = false;
   let timer = null;
 
   // SVGアイコン
-  const svgIcon = (() => {
-    const svg = document.createElementNS(SVG_NS, "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("width", "120%");
-    svg.setAttribute("height", "120%");
-    svg.style.color = COLOR_DEFAULT;
-    svg.style.transition = "color 0.2s ease";
-    svg.innerHTML = `
-      <style>
-        .loop-icon {
-          fill: none;
-          stroke: currentColor;
-          stroke-width: 1.5;
-          stroke-miterlimit: 10;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-        }
-      </style>
-      <path d="M3.58 5.16H17.42c1.66 0 3 1.34 3 3v3.32"  class="loop-icon"/>
-      <path d="M6.74 2l-3.16 3.16L6.74 8.32"              class="loop-icon"/>
-      <path d="M20.42 18.84H6.58c-1.66 0-3-1.34-3-3v-3.32" class="loop-icon"/>
-      <path d="M17.26 22l3.16-3.16L17.26 15.68"            class="loop-icon"/>
-    `;
-    return svg;
-  })();
+  const svgIcon = window.createMoreDetailSVG(COLOR_DEFAULT);
 
   // ループボタン
   const loopButton = (() => {
