@@ -142,8 +142,7 @@
     const m = Math.floor(sec / 60);
     return `${m}:${s}`;
   }
-  // Clip選択時の処理
-  // クリップIDを受け取り、APIからデータを取得してコンソールに表示
+  //Clip選択時の処理
   async function selectClip(clipId) {
     console.log("Clip selected:", clipId);
 
@@ -151,22 +150,60 @@
 
     try {
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`); 
-      }
       const raw = await res.text();
       console.log("Raw response:", raw);
-      let clipData;
-      try {
-        clipData = JSON.parse(raw);
-      } catch (e) {
-        console.error("JSON変換失敗:", e);
-        return;
-      }
+
+      const clipData = JSON.parse(raw);
       console.log("取得クリップデータ:", clipData);
+
+      setClipDataOnCookies(clipData);  // Cookie保存
+      redirectToClip(clipData);        // リンクにジャンプ
+
     } catch (err) {
-      console.error("API取得失敗:", err);
+      console.error("クリップ選択処理でエラー:", err);
     }
   }
+
+  //Cookieへ保存
+  function setClipDataOnCookies(data) {
+    const keys = ["title", "user", "startTime", "endTime", "url", "service"];
+    for (const key of keys) {
+      if (data[key] !== undefined) {
+        const encoded = encodeURIComponent(data[key]);
+        document.cookie = `${key}=${encoded}; path=/; max-age=3600; SameSite=Lax; secure`;
+        console.log(`🍪 Cookie set: ${key} = ${encoded}`);
+      }
+    }
+  }
+
+  //対象サービスごとにジャンプ
+  function redirectToClip({ url, service, startTime }) {
+    if (!url || !service) {
+      alert("URL または サービス情報が不正です");
+      return;
+    }
+
+    let baseUrl;
+    switch (service.toLowerCase()) {
+      case "netflix":
+        baseUrl = `https://www.netflix.com${url}`;
+        break;
+      case "amazon":
+        baseUrl = `https://www.amazon.co.jp${url}`;
+        break;
+      case "youtube":
+        baseUrl = `https://www.youtube.com${url}`;
+        break;
+      default:
+        alert(`未対応のサービス: ${service}`);
+        return;
+    }
+
+    const finalUrl = baseUrl + (baseUrl.includes("?") ? "&" : "?") + "t=" + Math.floor(startTime);
+    window.location.assign(finalUrl, "_blank");
+    console.log("再生位置付きで開きます:", finalUrl);
+  }
+
 })();
