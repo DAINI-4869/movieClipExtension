@@ -1,5 +1,6 @@
-(function() {
-  const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+(async function() {
+  const { API_URL, getApiEndpoint } = await import(chrome.runtime.getURL("utils.js"));
+  const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
   const BUTTON_ID = 'record-button';
 
   const SELECTORS = {
@@ -95,12 +96,12 @@
           endTime = videoPlayer.currentTime;
           currentPath = window.location.pathname;
           if(startTime > endTime){
-            throw new Error("録画終了時刻が開始時刻よりも早い値です");
+            throw new Error('録画終了時刻が開始時刻よりも早い値です');
           }
           const checkSecond = Math.abs(endTime - startTime);
           if(checkSecond < 1){
-            svgElement.setAttribute("color", window.COLOR_RECORDING);
-            throw new Error("録画範囲が短すぎます");
+            svgElement.setAttribute('color', window.COLOR_RECORDING);
+            throw new Error('録画範囲が短すぎます');
           }
 
           const data = {
@@ -109,7 +110,7 @@
             URL: currentPath,
           };
           data.service = detectService();
-          data.user = "test_user";
+          data.user = 'test_user';
 
 
           if (allTitleName) {
@@ -132,7 +133,7 @@
           sendData(data);
           init();
         } else {
-          svgElement.setAttribute("color", window.COLOR_RECORDING);
+          svgElement.setAttribute('color', window.COLOR_RECORDING);
           isRecording = true;
           startTime = videoPlayer.currentTime;
         }
@@ -174,7 +175,7 @@
       isRecording = false;
       startTime = null;
       endTime = null;
-      svgElement.setAttribute("color", window.COLOR_DEFAULT);
+      svgElement.setAttribute('color', window.COLOR_DEFAULT);
     }
   });
   /**
@@ -197,7 +198,7 @@
    * @param {Object} dataToSend - 送信するデータ
    */
   function sendData(dataToSend) {
-    fetch(window.url, { // window.urlは別ファイルに定義済み
+    fetch(getApiEndpoint('receive'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
