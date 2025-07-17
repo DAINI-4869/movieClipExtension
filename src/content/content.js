@@ -1,5 +1,6 @@
-(async function() {
-  const { API_URL, getApiEndpoint } = await import(chrome.runtime.getURL("./../utils.js"));
+import { API_URL, getApiEndpoint } from './../utils.js';
+
+(function() {
   const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
   const BUTTON_ID = 'record-button';
 
