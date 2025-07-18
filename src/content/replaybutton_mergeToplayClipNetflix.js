@@ -1,3 +1,5 @@
+import { getApiEndpoint } from './../utils.js';
+
 (function () {
   const BUTTON_ID = "nf-loop-toggle-btn";
   const SIDEBAR_ID = "nf-memo-sidebar";
@@ -103,7 +105,7 @@
   // API 取得 → 表示
   async function fetchDataAndRender(container) {
     try {
-      const res = await fetch(window.getUrl);
+      const res = await fetch(getApiEndpoint('random10'));
       const data = await res.json();
       const items = data.allReceivedData || [];
 
