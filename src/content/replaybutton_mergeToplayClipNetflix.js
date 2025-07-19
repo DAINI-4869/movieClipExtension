@@ -1,4 +1,4 @@
-import { getApiEndpoint } from './../utils.js';
+import { getApiEndpoint } from './../api.js';
 
 (function () {
   const BUTTON_ID = "nf-loop-toggle-btn";
