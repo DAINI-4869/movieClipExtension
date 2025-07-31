@@ -21,11 +21,6 @@
   // clipDataの判断を行う　別関数化を検討中
   // ---------------------------------------------------------------------------
   function ensureClipTagInURL() {
-    if (!window.location.search.includes('clip=1')) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('clip', '1');
-      window.location.href = url.toString();
-    }
     //clipdataの有無を取得
     chrome.storage.local.get(["playClipSystemKey"], (result) => {
     console.log("再生機能の起動キー:", result.playClipSystemKey);
