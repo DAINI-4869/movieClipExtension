@@ -39,7 +39,7 @@ import { getApiEndpoint } from './../api.js';
       svgIcon.style.color = isLooping ? COLOR_LOOPING : COLOR_DEFAULT;
       toggleSidebar();
     });
-    return btn;
+    return {btn,svg : svgIcon};
   }
 
   function createPlayNextClipButton() {
@@ -54,7 +54,7 @@ import { getApiEndpoint } from './../api.js';
       svgIcon.style.color = togglekey ? COLOR_DEFAULT : COLOR_LOOPING;
       console.log("▶️ 次のクリップを再生ボタンがクリックされました");
     });
-    return btn;
+    return { btn,svg: svgIcon};
   }
 
   const uiObserver = new MutationObserver(() => {
@@ -65,11 +65,15 @@ import { getApiEndpoint } from './../api.js';
     const nextBtnExists = document.getElementById(NEXT_BUTTON_ID);
 
     if (controls && episodeBtn && (!loopBtnExists || !nextBtnExists)) {
-      const loopButton = createLoopButton();
-      const playNextClipButton = createPlayNextClipButton();
+      const { btn: loopButton, svg: loopSvg } = createLoopButton();
+      const { btn: playNextClipButton, svg: playSvg } = createPlayNextClipButton();
 
       loopButton.className = episodeBtn.className;
       playNextClipButton.className = episodeBtn.className;
+
+      // SVGの色を設定（再描画時にも反映）
+      loopSvg.style.color = isLooping ? COLOR_LOOPING : COLOR_DEFAULT;
+      playSvg.style.color = togglekey === 1 ? COLOR_LOOPING : COLOR_DEFAULT;
 
       const wrapper = document.createElement("div");
       wrapper.className = episodeBtn.parentNode.className;
@@ -91,12 +95,13 @@ import { getApiEndpoint } from './../api.js';
       episodeBtn.parentNode.after(spacer);
     }
 
+    // プレイヤーUIが消えた時にボタンも消す
     if (!document.querySelector(SELECTOR_FWD10)) {
       document.getElementById(BUTTON_ID)?.remove();
       document.getElementById(NEXT_BUTTON_ID)?.remove();
     }
   });
-
+  // 初期化：ページ読み込み時にUIを監視
   uiObserver.observe(document.body, { childList: true, subtree: true });
   window.addEventListener("beforeunload", () => uiObserver.disconnect());
 
