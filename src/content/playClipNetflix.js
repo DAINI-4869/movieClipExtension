@@ -25,7 +25,7 @@ import { getApiEndpoint } from './../api.js';
   const COLOR_DEFAULT = window.COLOR_DETAIL_DEFAULT || "#FFFFFF";
   const COLOR_LOOPING = window.COLOR_DETAIL_ACTIVE || "#FF0000";
   let isLooping = false;
-  let togglekey = 0;
+  let togglekey = true;
 
   function createLoopButton() {
     const svgIcon = window.createMoreDetailSVG(COLOR_DEFAULT);
@@ -73,7 +73,7 @@ import { getApiEndpoint } from './../api.js';
 
       // SVGの色を設定（再描画時にも反映）
       loopSvg.style.color = isLooping ? COLOR_LOOPING : COLOR_DEFAULT;
-      playSvg.style.color = togglekey === 1 ? COLOR_LOOPING : COLOR_DEFAULT;
+      playSvg.style.color = togglekey ? COLOR_LOOPING : COLOR_DEFAULT;
 
       const wrapper = document.createElement("div");
       wrapper.className = episodeBtn.parentNode.className;
@@ -253,7 +253,7 @@ import { getApiEndpoint } from './../api.js';
     const userId = getCookie("username") || "anonymous"; // 仮：ユーザーID
 
     try {
-      const res = await fetch('http://localhost:3000/api/next-clip', {
+      const res = await fetch('http://localhost:3000/api/nextClip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ platform, currentClipId, userId })
@@ -415,7 +415,7 @@ import { getApiEndpoint } from './../api.js';
         clearInterval(countdownIntervalId);
         //ifで場合分けするbool値で管理
         // クリップモード終了
-        if (togglekey === 1 ){
+        if (togglekey){
           console.log("次のClipを再生");
           playNextClip(); // 次のクリップを再生
         }else {
