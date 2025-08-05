@@ -64,6 +64,7 @@ import { getApiEndpoint } from './../api.js';
       const script = document.createElement('script');
       script.src = chrome.runtime.getURL(file);
       script.onload = function() {
+        console.log(`Injected script: ${file}`);
         this.remove();
       };
       (tag || document.head).appendChild(script);
