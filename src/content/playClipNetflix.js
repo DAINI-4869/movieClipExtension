@@ -178,55 +178,6 @@
     location.reload();
   }
 
-  // ---------------------------------------------------------------------------
-  // 次のClipを再生するための関数
-  // ---------------------------------------------------------------------------
-  async function playNextClip() {
-    // 起動フラグの設定
-    await new Promise(resolve => chrome.storage.local.set({ playClipSystemKey: 1 }, resolve));
-
-    chrome.storage.local.get(["playClipSystemKey"], (result) => {
-      console.log("再生機能の起動キー:", result.playClipSystemKey);
-    });
-
-    // cookieから必要なデータを取得
-    const getCookie = (name) => {
-      const value = document.cookie.match(`(?:^|; )${name}=([^;]*)`);
-      return value ? decodeURIComponent(value[1]) : null;
-    };
-
-    const platform =  "Netflix"; // 仮：cookieから取得、またはデフォルト
-    const currentClipId = getCookie("clipId") || "000000";    // 仮：現在のclipId（任意の方法で埋め込む）
-    const userId = getCookie("username") || "anonymous"; // 仮：ユーザーID
-
-    try {
-      const res = await fetch('http://localhost:3000/api/next-clip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platform, currentClipId, userId })
-      });
-
-      if (!res.ok) throw new Error("サーバーエラー");
-
-      const data = await res.json();
-      console.log("次のクリップ情報:", data);
-
-      if (data?.url && typeof data.startTime === 'number') {
-        // クエリパラメータで再生位置を指定して遷移
-        const url = `https://www.netflix.com${data.url}?t=${Math.floor(data.startTime)}`;
-        location.href = url;
-      } else {
-        console.warn("無効なクリップデータ:", data);
-      }
-
-    } catch (err) {
-      console.error("次クリップ取得エラー:", err);
-    }
-  }
-
-
-
-
   window.addEventListener('beforeunload', (event) => {
   if (!isScriptReloading) {
     console.log('ユーザー操作など、スクリプト以外による再読み込みまたはページ遷移');
