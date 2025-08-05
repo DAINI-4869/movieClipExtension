@@ -1,9 +1,8 @@
 import "../css/content_button.css";
 import "../image/moreDetailSVG.js";
 import "../image/recordSVG.js";
-import "./playClipNetflix.js";
 import "../image/LoopButtonSVG.js";
-import "./replaybutton_mergeToplayClipNetflix.js";
+import "./playClipNetflix.js";
 import { getApiEndpoint } from './../api.js';
 
 (function() {
