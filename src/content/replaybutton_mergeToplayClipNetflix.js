@@ -37,7 +37,6 @@ import { getApiEndpoint } from './../api.js';
     btn.style.cursor = "pointer";
     btn.addEventListener("click", () => {
       console.log("次のクリップを再生ボタンがクリックされました");
-      
     });
     return btn;
   })();
@@ -54,10 +53,25 @@ import { getApiEndpoint } from './../api.js';
     const episodeBtn = document.querySelector(SELECTOR_EPISODE);
     if (controls && episodeBtn && !document.getElementById(BUTTON_ID)) {
       loopButton.className = episodeBtn.className;
+      playNextClipButton.className = episodeBtn.className;
+
+      //ラッパー作成
       const wrapper = document.createElement("div");
       wrapper.className = episodeBtn.parentNode.className;
+      wrapper.style.display = "flex";
+      wrapper.style.alignItems = "center";
+      wrapper.style.gap = "0.5rem"; // ボタン間のスペース
+
+      //スペーサーdiv
+      const separator = document.createElement("div");
+      separator.style.width = "1rem";
+      separator.style.height = "100%";
+
+      // ボタンを挿入
       episodeBtn.parentNode.after(wrapper);
       wrapper.appendChild(loopButton);
+      wrapper.appendChild(separator);
+      wrapper.appendChild(playNextClipButton);
 
       const spacer = document.createElement("div");
       spacer.style.minWidth = "3rem";
@@ -65,6 +79,7 @@ import { getApiEndpoint } from './../api.js';
     }
     if (!document.querySelector(SELECTOR_FWD10) && document.getElementById(BUTTON_ID)) {
       loopButton.remove();
+      playNextClipButton.remove();
     }
   });
   uiObserver.observe(document.body, { childList: true, subtree: true });

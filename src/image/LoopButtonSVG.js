@@ -1,54 +1,48 @@
 (() => {
   const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-  const COLOR_DEFAULT = "#FFFFFF";  // 基本色
-  const COLOR_ACTIVE = "#FF0000";   // アクティブ時の色
+  const COLOR_DEFAULT = "#FFFFFF";
+  const COLOR_ACTIVE = "#FF0000";  // optional: 詳細表示時などに変更可
 
-  function createRoundedRectSVG(color = COLOR_DEFAULT) {
+  function LoopButtonSVG(color = COLOR_DEFAULT) {
     const svg = document.createElementNS(SVG_NAMESPACE, "svg");
-    svg.setAttribute("viewBox", "0 0 400 180");
-    svg.setAttribute("width", "400");
-    svg.setAttribute("height", "180");
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "120%");
+    svg.setAttribute("height", "120%");
     svg.style.color = color;
-    svg.style.cursor = "pointer";
-    svg.style.borderRadius = "6px";
     svg.style.transition = "color 0.2s ease";
 
-    // クリックで色トグル
-    svg.addEventListener("click", () => {
-      svg.style.color = svg.style.color === COLOR_ACTIVE
-        ? COLOR_DEFAULT
-        : COLOR_ACTIVE;
-    });
-
-    // スタイル要素（fillはcurrentColorに依存）
     const style = document.createElementNS(SVG_NAMESPACE, "style");
     style.textContent = `
-      .rounded-rect {
-        fill: currentColor;
-        stroke: black;
-        stroke-width: 5;
-        opacity: 0.5;
+      .more-detail-icon {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-miterlimit: 10;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
     `;
     svg.appendChild(style);
 
-    // 角丸四角形
-    const rect = document.createElementNS(SVG_NAMESPACE, "rect");
-    rect.setAttribute("x", 50);
-    rect.setAttribute("y", 20);
-    rect.setAttribute("rx", 20);
-    rect.setAttribute("ry", 20);
-    rect.setAttribute("width", 150);
-    rect.setAttribute("height", 150);
-    rect.setAttribute("class", "rounded-rect");
+    const paths = [
+      { d: "M3.58 5.16H17.42c1.66 0 3 1.34 3 3v3.32" },
+      { d: "M6.74 2l-3.16 3.16L6.74 8.32" },
+      { d: "M20.42 18.84H6.58c-1.66 0-3-1.34-3-3v-3.32" },
+      { d: "M17.26 22l3.16-3.16L17.26 15.68" }
+    ];
 
-    svg.appendChild(rect);
+    for (const { d } of paths) {
+      const path = document.createElementNS(SVG_NAMESPACE, "path");
+      path.setAttribute("d", d);
+      path.setAttribute("class", "more-detail-icon");
+      svg.appendChild(path);
+    }
+
     return svg;
   }
 
   // グローバル登録
-  window.createRoundedRectSVG = createRoundedRectSVG;
+  window.LoopButtonSVG = LoopButtonSVG;
   window.COLOR_RECT_DEFAULT = COLOR_DEFAULT;
   window.COLOR_RECT_ACTIVE = COLOR_ACTIVE;
 })();
