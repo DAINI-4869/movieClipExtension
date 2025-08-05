@@ -22,7 +22,8 @@
     {
       "matches": ["https://www.netflix.com/*"],
       "run_at": "document_end",
-      "js": ["src/inject/inject_script.js"]
+      "js": ["src/inject/inject_script.js",
+             "src/util/history_change.js"]
     },
     {
       "matches": ["https://www.netflix.com/*"],
