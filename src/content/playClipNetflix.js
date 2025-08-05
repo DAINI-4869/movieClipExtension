@@ -47,12 +47,13 @@ import { getApiEndpoint } from './../api.js';
 
   const playNextClipButton = (() => {
     const btn = document.createElement("button");  
-    btn.id = "nf-play-next-clip-btn";
+    btn.id = BUTTON_ID;
     btn.setAttribute("aria-label", "次のクリップを再生");
     btn.appendChild(playNextClipButtonsvgIcon);
     btn.style.cursor = "pointer";
     btn.addEventListener("click", () => {
       console.log("次のクリップを再生ボタンがクリックされました");
+      togglekey = 1; // トグルキーを1に設定
     });
     return btn;
   })();
@@ -220,11 +221,11 @@ import { getApiEndpoint } from './../api.js';
       if (data[key] !== undefined) {
         const encoded = encodeURIComponent(data[key]);
         document.cookie = `${key}=${encoded}; path=/; max-age=3600; SameSite=Lax; secure`;
-        console.log(`🍪 Cookie set: ${key} = ${encoded}`);
+        console.log(`Cookie set: ${key} = ${encoded}`);
       }
     }
   }
-   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 次のClipを再生するための関数
   // ---------------------------------------------------------------------------
   async function playNextClip() {
@@ -409,13 +410,8 @@ import { getApiEndpoint } from './../api.js';
         //ifで場合分けするbool値で管理
         // クリップモード終了
         if (togglekey === 1 ){
-          // クリップモード終了
-          console.log("クリップモード終了");
-          // ストレージのplayClipSystemKeyを0に設定
-          chrome.storage.local.set({ playClipSystemKey: 0 }, () => {
-            console.log("playClipSystemKeyを0に設定しました。");
-            window.location.href = "http://localhost:3000/site_data/my_video"; //遷移先URL
-          });
+          console.log("次のClipを再生");
+          playNextClip(); // 次のクリップを再生
         }else {
           console.log("クリップ再度再生");
           reloadPageFromScript ();
