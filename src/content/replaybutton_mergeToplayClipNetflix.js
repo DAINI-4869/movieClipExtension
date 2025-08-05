@@ -27,6 +27,23 @@ import { getApiEndpoint } from './../api.js';
     return btn;
   })();
 
+  const playNextClipButtonsvgIcon = window.LoopButtonSVG(COLOR_DEFAULT);
+
+  const playNextClipButton = (() => {
+    const btn = document.createElement("button");  
+    btn.id = "nf-play-next-clip-btn";
+    btn.setAttribute("aria-label", "次のクリップを再生");
+    btn.appendChild(playNextClipButtonsvgIcon);
+    btn.style.cursor = "pointer";
+    btn.addEventListener("click", () => {
+      console.log("次のクリップを再生ボタンがクリックされました");
+      
+    });
+    return btn;
+  })();
+
+
+
   // Netflix UI に挿入
   const SELECTOR_STANDARD = '[data-uia="controls-standard"]';
   const SELECTOR_EPISODE = '[data-uia="control-episodes"]';
