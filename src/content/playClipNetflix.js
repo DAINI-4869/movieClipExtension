@@ -10,26 +10,25 @@ import { getApiEndpoint } from './../api.js';
   let clipData    = null;   // { starttime, endtime, name, title, username }
   let isScriptReloading = false;// スクリプトによるリロードフラグ
 
-  //デバッグ用変数定義
-  let togglekey = 0; // トグルキーの状態を管理する変数
-
   // End-time detection tolerance (seconds)
   const EPSILON = 0.05;
   let countdownIntervalId = null;
 
-  //ボタン作成の為
   const BUTTON_ID = "nf-loop-toggle-btn";
+  const NEXT_BUTTON_ID = "nf-next-clip-btn";
   const SIDEBAR_ID = "nf-memo-sidebar";
-  const SIDEBAR_PCT = 20;
+  const SIDEBAR_PCT = 30; // サイドバーの幅（%）
+  const SELECTOR_STANDARD = '[data-uia="controls-standard"]';
+  const SELECTOR_EPISODE = '[data-uia="control-episodes"]';
+  const SELECTOR_FWD10 = '[data-uia="control-forward10"]';
+
   const COLOR_DEFAULT = window.COLOR_DETAIL_DEFAULT || "#FFFFFF";
   const COLOR_LOOPING = window.COLOR_DETAIL_ACTIVE || "#FF0000";
   let isLooping = false;
-  let timer = null;
+  let togglekey = 0;
 
-  // SVGアイコン
-  const svgIcon = window.createMoreDetailSVG(COLOR_DEFAULT);
-  // ループボタン
-  const loopButton = (() => {
+  function createLoopButton() {
+    const svgIcon = window.createMoreDetailSVG(COLOR_DEFAULT);
     const btn = document.createElement("button");
     btn.id = BUTTON_ID;
     btn.setAttribute("aria-label", "メモサイドバー開閉");
@@ -41,63 +40,66 @@ import { getApiEndpoint } from './../api.js';
       toggleSidebar();
     });
     return btn;
-  })();
+  }
 
-  const playNextClipButtonsvgIcon = window.LoopButtonSVG(COLOR_DEFAULT);
-
-  const playNextClipButton = (() => {
-    const btn = document.createElement("button");  
-    btn.id = BUTTON_ID;
+  function createPlayNextClipButton() {
+    const svgIcon = window.LoopButtonSVG(COLOR_DEFAULT);
+    const btn = document.createElement("button");
+    btn.id = NEXT_BUTTON_ID;
     btn.setAttribute("aria-label", "次のクリップを再生");
-    btn.appendChild(playNextClipButtonsvgIcon);
+    btn.appendChild(svgIcon);
     btn.style.cursor = "pointer";
     btn.addEventListener("click", () => {
-      console.log("次のクリップを再生ボタンがクリックされました");
-      togglekey = 1; // トグルキーを1に設定
+      togglekey = !togglekey; // トグル状態を切り替え
+      svgIcon.style.color = togglekey ? COLOR_DEFAULT : COLOR_LOOPING;
+      console.log("▶️ 次のクリップを再生ボタンがクリックされました");
     });
     return btn;
-  })();
- // Netflix UI に挿入
-  const SELECTOR_STANDARD = '[data-uia="controls-standard"]';
-  const SELECTOR_EPISODE = '[data-uia="control-episodes"]';
-  const SELECTOR_FWD10 = '[data-uia="control-forward10"]';
+  }
 
   const uiObserver = new MutationObserver(() => {
     const controls = document.querySelector(SELECTOR_STANDARD);
     const episodeBtn = document.querySelector(SELECTOR_EPISODE);
-    if (controls && episodeBtn && !document.getElementById(BUTTON_ID)) {
+
+    const loopBtnExists = document.getElementById(BUTTON_ID);
+    const nextBtnExists = document.getElementById(NEXT_BUTTON_ID);
+
+    if (controls && episodeBtn && (!loopBtnExists || !nextBtnExists)) {
+      const loopButton = createLoopButton();
+      const playNextClipButton = createPlayNextClipButton();
+
       loopButton.className = episodeBtn.className;
       playNextClipButton.className = episodeBtn.className;
 
-      //ラッパー作成
       const wrapper = document.createElement("div");
       wrapper.className = episodeBtn.parentNode.className;
       wrapper.style.display = "flex";
       wrapper.style.alignItems = "center";
-      wrapper.style.gap = "0.5rem"; // ボタン間のスペース
+      wrapper.style.gap = "0.5rem";
 
-      //スペーサーdiv
       const separator = document.createElement("div");
       separator.style.width = "1rem";
       separator.style.height = "100%";
 
-      // ボタンを挿入
-      episodeBtn.parentNode.after(wrapper);
       wrapper.appendChild(loopButton);
       wrapper.appendChild(separator);
       wrapper.appendChild(playNextClipButton);
+      episodeBtn.parentNode.after(wrapper);
 
       const spacer = document.createElement("div");
       spacer.style.minWidth = "3rem";
       episodeBtn.parentNode.after(spacer);
     }
-    if (!document.querySelector(SELECTOR_FWD10) && document.getElementById(BUTTON_ID)) {
-      loopButton.remove();
-      playNextClipButton.remove();
+
+    if (!document.querySelector(SELECTOR_FWD10)) {
+      document.getElementById(BUTTON_ID)?.remove();
+      document.getElementById(NEXT_BUTTON_ID)?.remove();
     }
   });
+
   uiObserver.observe(document.body, { childList: true, subtree: true });
   window.addEventListener("beforeunload", () => uiObserver.disconnect());
+
 
   // サイドバーのトグル
   function toggleSidebar() {
