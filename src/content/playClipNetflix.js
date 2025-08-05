@@ -147,7 +147,6 @@ import { getApiEndpoint } from './../api.js';
     const player = document.querySelector(".watch-video--player-view");
     if (player) player.style.width = "100%";
     document.getElementById(SIDEBAR_ID)?.remove();
-    clearInterval(timer);
   }
 
   // API 取得 → 表示
